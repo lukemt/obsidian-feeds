@@ -1,4 +1,5 @@
 const config = {
+  searchFor: "[[#]]",
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
   oneliners: true,
@@ -20,10 +21,10 @@ configContainerEl._feedState = configContainerEl._feedState ?? {}
 
 const getState = () => {
   const uiState = configContainerEl._feedState
-  console.log({uiState})
+  params = typeof input === "string" ? {searchFor: input} : input;
   return {
     ...config,
-    ...input,
+    ...params,
     ...uiState,
   };
 }
@@ -151,11 +152,21 @@ const showParent = (listItem) => {
   return false;
 }
 
-const query = `[[#]]` + (state.includeFolders.length ? ` AND (${state.includeFolders.map(f => `"${f}"`).join(" OR ")})` : "") + (state.excludeFolders.length ? ` AND (${state.excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "");
+const searchFor = (state.searchFor || "[[#]]").replaceAll("[[#]]", `[[${fileName}]]`);
+const searchForLinks = searchFor.match(/\[\[(.*?)\]\]/g) ?? [];
+const searchForTags = searchFor.match(/#[^\s,#]+/g) ?? [];
+const searchQuery = [...searchForLinks, ...searchForTags].join(" OR ");
+
+const query = `(${searchQuery})`
+  + (state.includeFolders.length ? ` AND (${state.includeFolders.map(f => `"${f}"`).join(" OR ")})` : "")
+  + (state.excludeFolders.length ? ` AND (${state.excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "")
 
 const result = dv.pages(query)
   .file.lists
-  .where(l => l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName))
+  .where(l => l.section.subpath === fileName
+    || l.outlinks?.some(o => searchForLinks.includes(`[[${o.fileName()}]]`))
+    || l.tags?.some(t => searchForTags.some(tt => t.includes(tt)))
+  )
   .flatMap(l => showParent(l)  ? [l] : l.children)
   .groupBy(l => state.groupBySection ? l.link : l.link.toFile())
   .sort(g => state.sortByPath ? g : g.key.fileName(), "desc")
