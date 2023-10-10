@@ -2,49 +2,60 @@ const config = {
   oneliners: true,
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
-  removeOwnLinkFromList: true,
-  showConfigPanel: true,
+  showOptionsPanel: false,
   showCopyFeedButton: false,
-  // search: "",
+  showParentIfNotAlone: true,
+  removeOwnLinkFromList: false,
 }
 
 const fileName = dv.current()?.file?.name
+const filePath = dv.current()?.file?.path
 if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
-const configEl = dv.el("div", "");
 
 const getState = () => {
-  const path = dv.current()?.file?.path;
-  const state = (window._feedsState && window._feedsState[path]) ?? {};
+  const uiState = (window._feedsState && window._feedsState[filePath]) ?? {};
   return {
     ...config,
     ...input,
-    ...state,
+    ...uiState,
   };
 }
+const state = getState();
 
-const {oneliners, excludeFolders, includeFolders, removeOwnLinkFromList, showConfigPanel, showCopyFeedButton} = getState();
-
-window.setStateProperty = (path, propName, value) => {
+const setStateProperty = (propName, value, refresh = true) => {
   if (!window._feedsState) window._feedsState = {}
-  window._feedsState[path] = {
-    ...getState(),
+  window._feedsState[filePath] = {
+    ...state,
     [propName]: value
+  }
+  if (refresh) {
+    app.commands.executeCommandById("dataview:dataview-force-refresh-views")
   }
 }
 
-const resetState = () => {
-  window._feedsState = undefined
+if (state.showOptionsPanel) {
+  dv.el("a", "&lt; hide options", {
+    onclick: () => {
+      setStateProperty("showOptionsPanel", false);
+    }
+  })
+} else {
+  dv.el("a", "show options &gt;", {
+    onclick: () => {
+      setStateProperty("showOptionsPanel", true);
+    }
+  })
 }
+
+const configEl = dv.el("div", "");
 
 const addToggle = (label, prop) => {
   const toggle = document.createElement("input");
   toggle.type = "checkbox";
   toggle.checked = getState()[prop];
   toggle.addEventListener("change", () => {
-    setStateProperty(dv.current()?.file?.path, prop, toggle.checked);
-    app.commands.executeCommandById("dataview:dataview-force-refresh-views")
+    setStateProperty(prop, toggle.checked);
   })
-  // push the toggle down a bit so it aligns with the text
   toggle.style.margin = "0 0.5em -0.1em";
   const labelEl = document.createElement("label");
   labelEl.appendChild(toggle);
@@ -54,9 +65,9 @@ const addToggle = (label, prop) => {
 
 const addResetStateButton = () => {
   const button = document.createElement("button");
-  button.textContent = "Reset state";
+  button.textContent = "Reset options";
   button.onclick = () => {
-    resetState();
+    window._feedsState = undefined
     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
   }
   configEl.appendChild(button);
@@ -65,33 +76,6 @@ const addResetStateButton = () => {
 const addNewLine = () => {
   configEl.appendChild(document.createElement("br"));
 }
-
-// search input:
-// const addTextInput = (label, prop) => {
-//   const input = document.createElement("input");
-//   const path = dv.current()?.file?.path;
-//   input.type = "text";
-//   input.value = getState()[prop];
-//   // observe enter key
-//   input.addEventListener("keyup", (e) => {
-//     if (e.key === "Enter") {
-//       setStateProperty(path, prop, input.value);
-//       app.commands.executeCommandById("dataview:dataview-force-refresh-views")
-//     }
-//   })
-  
-//   const labelEl = document.createElement("label");
-//   labelEl.appendChild(input);
-
-//   const button = document.createElement("button");
-//   button.textContent = "Search";
-//   button.addEventListener("click", () => {
-//     setStateProperty(path, prop, input.value);
-//     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
-//   })
-//   labelEl.appendChild(button);
-//   configEl.appendChild(labelEl);
-// }
 
 const addCopyFeedButton = (result) => {
   const md = dv.markdownTaskList(result)
@@ -110,58 +94,57 @@ const addCopyFeedButton = (result) => {
   }
 };
 
-if (showConfigPanel) {
-  // addTextInput("Search", "search");
-  // addNewLine();
+if (state.showOptionsPanel) {
   addToggle("Find oneliners", "oneliners");
+  addNewLine();
+  addToggle("Show parent if not alone", "showParentIfNotAlone");
+  if (state.showParentIfNotAlone) {
+    addNewLine();
+    addToggle("Remove own link from list", "removeOwnLinkFromList");
+  }
   addNewLine();
   addResetStateButton();
 }
 
-const hideParent = (listItem) => {
-  if (listItem.section.subpath === fileName) return false;
-  // if i remove all links and there is still content other than special characters,
-  // i want to keep the parent as is
-  // and not change the text
-  // if i remove all links and there is no content other than special characters,
-  // but there are several links, i want to keep the parent, but remove my own link
-  // if i remove all links and there is no content other than special characters,
-  // and there is only one link, i want to remove the parent
+const showParent = (listItem) => {
+  if (listItem.section.subpath === fileName) return true;
   
   const hasText = /[a-zA-Z0-9]/g.test(listItem.text.replace(/\[\[[^\]]+\]\]/g, ""));
   if (hasText) {
-    if (oneliners) {
-      return false;
-    }
-    return true;
-  }
-
-  const textWithoutMe = listItem.text
-    .replace(`[[${fileName}]]`, "")
-    .replace(/^[^\[]+/, "")
-    .replace(/[^\]]+$/, "")
-  
-  if (textWithoutMe) {
-    if (removeOwnLinkFromList) {
-      listItem.text = textWithoutMe;
+    if (state.oneliners || (state.showParentIfNotAlone && listItem.children.length)) {
+      return true;
     }
     return false;
   }
 
-  return true;
+  // not alone, keep parent
+  if (state.showParentIfNotAlone) {
+    const textWithoutOwnLink = listItem.text
+      .replace(`[[${fileName}]]`, "")
+      .replace(/^[^\[]+/, "")
+      .replace(/[^\]]+$/, "")
+    
+    if (textWithoutOwnLink) {
+      if (state.removeOwnLinkFromList) {
+        listItem.text = textWithoutOwnLink;
+      }
+      return true;
+    }
+  }
+
+  return false;
 }
 
-const query = `[[#]]` + (includeFolders.length ? ` AND (${includeFolders.map(f => `"${f}"`).join(" OR ")})` : "") + (excludeFolders.length ? ` AND (${excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "");
-console.log({ query })
+const query = `[[#]]` + (state.includeFolders.length ? ` AND (${state.includeFolders.map(f => `"${f}"`).join(" OR ")})` : "") + (state.excludeFolders.length ? ` AND (${state.excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "");
 
 const result = dv.pages(query)
   .file.lists
   .where(l => l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName))
-  .flatMap(l => hideParent(l)  ? l.children : [l])
+  .flatMap(l => showParent(l)  ? [l] : l.children)
   .groupBy(l => l.link.toFile())
   .sort(g => g.key.fileName(), "desc")
   
-if (getState().showCopyFeedButton) {
+if (state.showCopyFeedButton) {
   addCopyFeedButton(result);
 }
 
