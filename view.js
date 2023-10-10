@@ -12,8 +12,14 @@ const fileName = dv.current()?.file?.name
 const filePath = dv.current()?.file?.path
 if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
 
+const configEl = dv.el("div", "");
+const configContainerEl = configEl.parentElement.parentElement ?? {}
+configContainerEl._feedState = configContainerEl._feedState ?? {}
+
+
 const getState = () => {
-  const uiState = (window._feedsState && window._feedsState[filePath]) ?? {};
+  const uiState = configContainerEl._feedState
+  console.log({uiState})
   return {
     ...config,
     ...input,
@@ -23,31 +29,30 @@ const getState = () => {
 const state = getState();
 
 const setStateProperty = (propName, value, refresh = true) => {
-  if (!window._feedsState) window._feedsState = {}
-  window._feedsState[filePath] = {
-    ...state,
-    [propName]: value
-  }
+  configContainerEl._feedState[propName] = value
+  
   if (refresh) {
     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
   }
 }
 
-if (state.showOptionsPanel) {
-  dv.el("a", "&lt; hide options", {
-    onclick: () => {
+const addShowOptionsLink = () => {
+  const link = document.createElement("a");
+
+  if (state.showOptionsPanel) {
+    link.textContent = "< Hide options";
+    link.onclick = () => {
       setStateProperty("showOptionsPanel", false);
     }
-  })
-} else {
-  dv.el("a", "show options &gt;", {
-    onclick: () => {
+  } else {
+    link.textContent = "Show options >";
+    link.onclick = () => {
       setStateProperty("showOptionsPanel", true);
     }
-  })
+  }
+  link.style.margin = "0.2em";
+  configEl.appendChild(link);
 }
-
-const configEl = dv.el("div", "");
 
 const addToggle = (label, prop) => {
   const toggle = document.createElement("input");
@@ -67,7 +72,9 @@ const addResetStateButton = () => {
   const button = document.createElement("button");
   button.textContent = "Reset options";
   button.onclick = () => {
-    window._feedsState = undefined
+    configContainerEl._feedState = {
+      showOptionsPanel: true,
+    }
     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
   }
   configEl.appendChild(button);
@@ -94,7 +101,9 @@ const addCopyFeedButton = (result) => {
   }
 };
 
+addShowOptionsLink();
 if (state.showOptionsPanel) {
+  addNewLine();
   addToggle("Find oneliners", "oneliners");
   addNewLine();
   addToggle("Show parent if not alone", "showParentIfNotAlone");
