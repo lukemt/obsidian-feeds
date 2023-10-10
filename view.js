@@ -150,7 +150,7 @@ const query = `[[#]]` + (includeFolders.length ? ` AND (${includeFolders.map(f =
 console.log({query})
 const result = dv.pages(query)
   .file.lists
-  .where(l => (l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName)) && l.text.includes(getState().search))
+  .where(l => l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName))
   .flatMap(l => hideParent(l)  ? l.children : [l])
   .groupBy(l => l.link.toFile())
   .sort(g => g.key.fileName(), "desc")
