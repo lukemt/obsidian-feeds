@@ -5,7 +5,9 @@ const configEl = dv.el("div");
 const config = {
   oneliners: false,
   showCopyFeedButton: true,
-  search: ""
+  excludeFolders: ["Logseq/logseq"],
+  includeFolders: ["Logseq"],
+  // search: "",
 }
 
 const getState = () => {
@@ -59,31 +61,49 @@ const addNewLine = () => {
   configEl.appendChild(document.createElement("br"));
 }
 
-const addTextInput = (label, prop) => {
-  const input = document.createElement("input");
-  const path = dv.current()?.file?.path;
-  input.type = "text";
-  input.value = getState()[prop];
-  // observe enter key
-  input.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") {
-      setStateProperty(path, prop, input.value);
-      app.commands.executeCommandById("dataview:dataview-force-refresh-views")
-    }
-  })
+// search input:
+// const addTextInput = (label, prop) => {
+//   const input = document.createElement("input");
+//   const path = dv.current()?.file?.path;
+//   input.type = "text";
+//   input.value = getState()[prop];
+//   // observe enter key
+//   input.addEventListener("keyup", (e) => {
+//     if (e.key === "Enter") {
+//       setStateProperty(path, prop, input.value);
+//       app.commands.executeCommandById("dataview:dataview-force-refresh-views")
+//     }
+//   })
   
-  const labelEl = document.createElement("label");
-  labelEl.appendChild(input);
+//   const labelEl = document.createElement("label");
+//   labelEl.appendChild(input);
 
-  const button = document.createElement("button");
-  button.textContent = "Search";
-  button.addEventListener("click", () => {
-    setStateProperty(path, prop, input.value);
-    app.commands.executeCommandById("dataview:dataview-force-refresh-views")
-  })
-  labelEl.appendChild(button);
-  configEl.appendChild(labelEl);
-}
+//   const button = document.createElement("button");
+//   button.textContent = "Search";
+//   button.addEventListener("click", () => {
+//     setStateProperty(path, prop, input.value);
+//     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
+//   })
+//   labelEl.appendChild(button);
+//   configEl.appendChild(labelEl);
+// }
+
+const addCopyFeedButton = (result) => {
+  const md = dv.markdownTaskList(result)
+    .replace(/    /gm, "\t")
+    .replace(/^# \[\[[^\|]+\|([^\]]+)\]\]\n\n/gm, (a, b) => `- [[${b}]]\n`)
+
+  if (md) {
+    const button = document.createElement("button");
+    button.textContent = "📋 Copy Feed as markdown";
+    button.onclick = () => {
+      navigator.clipboard.writeText(md);
+      button.textContent = "📋 Copied!";
+    }
+    button.style.margin = "0 1em";
+    configEl.appendChild(button);
+  }
+};
 
 // addTextInput("Search", "search");
 // addNewLine();
@@ -91,6 +111,7 @@ addToggle("Find oneliners", "oneliners");
 addNewLine();
 addResetStateButton();
 
+// ---
 
 const hideParent = (listItem) => {
   if (listItem.section.subpath === fileName) return false;
@@ -124,7 +145,10 @@ const hideParent = (listItem) => {
   return true;
 }
 
-const result = dv.pages('[[#]] AND !"Logseq/logseq"')
+const { includeFolders, excludeFolders } = getState();
+const query = `[[#]]` + (includeFolders.length ? ` AND (${includeFolders.map(f => `"${f}"`).join(" OR ")})` : "") + (excludeFolders.length ? ` AND (${excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "");
+console.log({query})
+const result = dv.pages(query)
   .file.lists
   .where(l => (l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName)) && l.text.includes(getState().search))
   .flatMap(l => hideParent(l)  ? l.children : [l])
@@ -132,28 +156,7 @@ const result = dv.pages('[[#]] AND !"Logseq/logseq"')
   .sort(g => g.key.fileName(), "desc")
   
 if (getState().showCopyFeedButton) {
-  const md = dv.markdownTaskList(result)
-    .replace(/    /gm, "\t")
-    .replace(/^# \[\[[^\|]+\|([^\]]+)\]\]\n\n/gm, (a, b) => `- [[${b}]]\n`)
-  
-  // if (md) dv.el("button", "📋 Copy Feed as markdown", {
-  //   attr: {
-  //     onclick: "navigator.clipboard.writeText(this.getAttr('data-md'));this.textContent='📋 Copied!'",
-  //     "data-md": md,
-  //     style: "margin: 2em 0;"
-  //   }
-  // })
-
-  if (md) {
-    const button = document.createElement("button");
-    button.textContent = "📋 Copy Feed as markdown";
-    button.onclick = () => {
-      navigator.clipboard.writeText(md);
-      button.textContent = "📋 Copied!";
-    }
-    button.style.margin = "0 1em";
-    configEl.appendChild(button);
-  }
+  addCopyFeedButton(result);
 }
 
 
