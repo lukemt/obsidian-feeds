@@ -6,7 +6,7 @@ const config = {
   oneliners: false,
   showCopyFeedButton: true,
   excludeFolders: ["Logseq/logseq"],
-  includeFolders: ["Logseq"],
+  includeFolders: [],
   // search: "",
 }
 
