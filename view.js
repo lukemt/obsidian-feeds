@@ -1,12 +1,13 @@
 const fileName = dv.current()?.file?.name
 if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
-const configEl = dv.el("div");
+const configEl = dv.el("div", "");
 
 const config = {
-  oneliners: false,
-  showCopyFeedButton: true,
+  oneliners: true,
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
+  showConfigPanel: true,
+  showCopyFeedButton: false,
   // search: "",
 }
 
@@ -18,6 +19,8 @@ const getState = () => {
     ...window._feedsState[path]
   };
 }
+
+const {oneliners, excludeFolders, includeFolders, showConfigPanel, showCopyFeedButton} = getState();
 
 window.setStateProperty = (path, propName, value) => {
   if (!window._feedsState) window._feedsState = {}
@@ -105,13 +108,13 @@ const addCopyFeedButton = (result) => {
   }
 };
 
-// addTextInput("Search", "search");
-// addNewLine();
-addToggle("Find oneliners", "oneliners");
-addNewLine();
-addResetStateButton();
-
-// ---
+if (showConfigPanel) {
+  // addTextInput("Search", "search");
+  // addNewLine();
+  addToggle("Find oneliners", "oneliners");
+  addNewLine();
+  addResetStateButton();
+}
 
 const hideParent = (listItem) => {
   if (listItem.section.subpath === fileName) return false;
@@ -125,8 +128,7 @@ const hideParent = (listItem) => {
   
   const hasText = /[a-zA-Z0-9]/g.test(listItem.text.replace(/\[\[[^\]]+\]\]/g, ""));
   if (hasText) {
-    console.log("has text", {state: getState(), text: listItem.text});
-    if (getState().oneliners) {
+    if (oneliners) {
       return false;
     }
     return true;
@@ -145,9 +147,9 @@ const hideParent = (listItem) => {
   return true;
 }
 
-const { includeFolders, excludeFolders } = getState();
 const query = `[[#]]` + (includeFolders.length ? ` AND (${includeFolders.map(f => `"${f}"`).join(" OR ")})` : "") + (excludeFolders.length ? ` AND (${excludeFolders.map(f => `!"${f}"`).join(" OR ")})` : "");
-console.log({query})
+console.log({ query })
+
 const result = dv.pages(query)
   .file.lists
   .where(l => l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName))
@@ -159,6 +161,4 @@ if (getState().showCopyFeedButton) {
   addCopyFeedButton(result);
 }
 
-
 dv.taskList(result)
-
