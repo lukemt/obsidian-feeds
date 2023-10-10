@@ -1,11 +1,13 @@
 const config = {
-  oneliners: true,
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
+  oneliners: true,
   showOptionsPanel: false,
-  showCopyFeedButton: false,
+  showCopyFeedButton: true,
   showParentIfNotAlone: true,
   removeOwnLinkFromList: false,
+  groupBySection: false,
+  sortByPath: true,
 }
 
 const fileName = dv.current()?.file?.name
@@ -15,7 +17,6 @@ if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
 const configEl = dv.el("div", "");
 const configContainerEl = configEl.parentElement.parentElement ?? {}
 configContainerEl._feedState = configContainerEl._feedState ?? {}
-
 
 const getState = () => {
   const uiState = configContainerEl._feedState
@@ -32,7 +33,13 @@ const setStateProperty = (propName, value, refresh = true) => {
   configContainerEl._feedState[propName] = value
   
   if (refresh) {
+    // set height to client height to reduce flickering
+    configContainerEl.style.height = configContainerEl.clientHeight + "px";
     app.commands.executeCommandById("dataview:dataview-force-refresh-views")
+    setTimeout(() => {
+      configContainerEl.style.height = "";
+    }
+    , 100);
   }
 }
 
@@ -150,10 +157,10 @@ const result = dv.pages(query)
   .file.lists
   .where(l => l.section.subpath === fileName || l.outlinks?.some(o => o.fileName() === fileName))
   .flatMap(l => showParent(l)  ? [l] : l.children)
-  .groupBy(l => l.link.toFile())
-  .sort(g => g.key.fileName(), "desc")
+  .groupBy(l => state.groupBySection ? l.link : l.link.toFile())
+  .sort(g => state.sortByPath ? g : g.key.fileName(), "desc")
   
-if (state.showCopyFeedButton) {
+if (state.showCopyFeedButton && state.showOptionsPanel) {
   addCopyFeedButton(result);
 }
 
