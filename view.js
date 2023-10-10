@@ -2,6 +2,7 @@ const config = {
   oneliners: true,
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
+  removeOwnLinkFromList: true,
   showConfigPanel: true,
   showCopyFeedButton: false,
   // search: "",
@@ -13,15 +14,15 @@ const configEl = dv.el("div", "");
 
 const getState = () => {
   const path = dv.current()?.file?.path;
-  const feedsState = (window._feedsState && window._feedsState[path]) ?? {};
+  const state = (window._feedsState && window._feedsState[path]) ?? {};
   return {
     ...config,
     ...input,
-    ...feedsState,
+    ...state,
   };
 }
 
-const {oneliners, excludeFolders, includeFolders, showConfigPanel, showCopyFeedButton} = getState();
+const {oneliners, excludeFolders, includeFolders, removeOwnLinkFromList, showConfigPanel, showCopyFeedButton} = getState();
 
 window.setStateProperty = (path, propName, value) => {
   if (!window._feedsState) window._feedsState = {}
@@ -141,7 +142,9 @@ const hideParent = (listItem) => {
     .replace(/[^\]]+$/, "")
   
   if (textWithoutMe) {
-    // listItem.text = textWithoutMe;
+    if (removeOwnLinkFromList) {
+      listItem.text = textWithoutMe;
+    }
     return false;
   }
 
