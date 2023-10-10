@@ -21,7 +21,12 @@ configContainerEl._feedState = configContainerEl._feedState ?? {}
 
 const getState = () => {
   const uiState = configContainerEl._feedState
-  params = typeof input === "string" ? {searchFor: input} : input;
+  let params = {}
+  if (typeof input === "string") {
+    params = { searchFor: input };
+  } else if (typeof input === "object") {
+    params = input;
+  }
   return {
     ...config,
     ...params,
