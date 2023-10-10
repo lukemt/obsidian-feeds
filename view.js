@@ -1,7 +1,3 @@
-const fileName = dv.current()?.file?.name
-if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
-const configEl = dv.el("div", "");
-
 const config = {
   oneliners: true,
   excludeFolders: ["Logseq/logseq"],
@@ -11,12 +7,17 @@ const config = {
   // search: "",
 }
 
+const fileName = dv.current()?.file?.name
+if (fileName == null) dv.el("div", "Please reopen the file to show the feed")
+const configEl = dv.el("div", "");
+
 const getState = () => {
   const path = dv.current()?.file?.path;
-  if (!path || !window._feedsState) return config;
+  const feedsState = (window._feedsState && window._feedsState[path]) ?? {};
   return {
     ...config,
-    ...window._feedsState[path]
+    ...input,
+    ...feedsState,
   };
 }
 
