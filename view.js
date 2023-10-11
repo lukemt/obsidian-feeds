@@ -10,6 +10,7 @@ const config = {
   removeOwnLinkFromList: false,
   groupBySection: false,
   sortByPath: true,
+  showTree: false,
 };
 
 const fileName = dv.current()?.file?.name;
@@ -139,18 +140,38 @@ if (state.showOptionsPanel) {
   addNewLine();
   addSelect("Only with tasks", "onlyWithTasks", ["", "any", "undone", "done"]);
   addNewLine();
-  addToggle("Find oneliners", "oneliners");
-  addNewLine();
-  addToggle("Show parent if not alone", "showParentIfNotAlone");
-  if (state.showParentIfNotAlone) {
+  addToggle("Show tree", "showTree");
+  if (!state.showTree) {
     addNewLine();
-    addToggle("Remove own link from list", "removeOwnLinkFromList");
+    addToggle("Find oneliners", "oneliners");
+    addNewLine();
+    addToggle("Show parent if not alone", "showParentIfNotAlone");
+    if (state.showParentIfNotAlone) {
+      addNewLine();
+      addToggle("Remove own link from list", "removeOwnLinkFromList");
+    }
   }
   addNewLine();
   addToggle("Group by section", "groupBySection");
   addNewLine();
   addResetStateButton();
 }
+
+// --------------------------------------
+
+const isMatch = (l) =>
+  l.section.subpath === fileName ||
+  l.outlinks?.some((o) => searchForLinks.includes(`[[${o.fileName()}]]`)) ||
+  l.tags?.some((t) => searchForTags.some((tt) => t.includes(tt)));
+
+const tree = (listItem) => {
+  // attention: this mutates the list item
+  if (isMatch(listItem)) {
+    return [listItem];
+  }
+  listItem.children = listItem.children.flatMap(tree);
+  return listItem.children.length ? [listItem] : [];
+};
 
 const showParent = (listItem) => {
   if (listItem.section.subpath === fileName) return true;
@@ -237,15 +258,12 @@ const query =
 const result = dv
   .pages(query)
   .file.lists.where(
-    (l) =>
-      l.section.subpath === fileName ||
-      l.outlinks?.some((o) => searchForLinks.includes(`[[${o.fileName()}]]`)) ||
-      l.tags?.some((t) => searchForTags.some((tt) => t.includes(tt)))
+    state.showTree
+      ? (l) => !l.parent && someOfMeAndMyChildren(l, isMatch)
+      : isMatch
   )
-  .flatMap((l) => (showParent(l) ? [l] : l.children))
-  .flatMap((l) =>
-    !state.onlyWithTasks || someOfMeAndMyChildren(l, showTask) ? [l] : []
-  )
+  .flatMap(state.showTree ? tree : (l) => (showParent(l) ? [l] : l.children))
+  .filter((l) => !state.onlyWithTasks || someOfMeAndMyChildren(l, showTask))
   .groupBy((l) => (state.groupBySection ? l.link : l.link.toFile()))
   .sort((g) => (state.sortByPath ? g : g.key.fileName()), "desc");
 
