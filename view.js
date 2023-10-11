@@ -1,5 +1,6 @@
 const config = {
   searchFor: "[[#]]",
+  onlyWithTasks: false, // "all", "done", "undone"
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
   oneliners: true,
@@ -69,7 +70,7 @@ const addShowOptionsLink = () => {
 const addToggle = (label, prop) => {
   const toggle = document.createElement("input");
   toggle.type = "checkbox";
-  toggle.checked = getState()[prop];
+  toggle.checked = state[prop];
   toggle.addEventListener("change", () => {
     setStateProperty(prop, toggle.checked);
   });
@@ -77,6 +78,25 @@ const addToggle = (label, prop) => {
   const labelEl = document.createElement("label");
   labelEl.appendChild(toggle);
   labelEl.appendChild(document.createTextNode(label));
+  configEl.appendChild(labelEl);
+};
+
+const addSelect = (label, prop, options) => {
+  const select = document.createElement("select");
+  select.style.margin = "0 0.5em -0.1em";
+  select.onchange = () => {
+    setStateProperty(prop, select.value);
+  };
+  options.forEach((o) => {
+    const option = document.createElement("option");
+    option.value = o;
+    option.textContent = o;
+    select.appendChild(option);
+  });
+  select.value = state[prop];
+  const labelEl = document.createElement("label");
+  labelEl.appendChild(document.createTextNode(label));
+  labelEl.appendChild(select);
   configEl.appendChild(labelEl);
 };
 
@@ -117,6 +137,8 @@ const addCopyFeedButton = (result) => {
 addShowOptionsLink();
 if (state.showOptionsPanel) {
   addNewLine();
+  addSelect("Only with tasks", "onlyWithTasks", ["", "any", "undone", "done"]);
+  addNewLine();
   addToggle("Find oneliners", "oneliners");
   addNewLine();
   addToggle("Show parent if not alone", "showParentIfNotAlone");
@@ -124,6 +146,8 @@ if (state.showOptionsPanel) {
     addNewLine();
     addToggle("Remove own link from list", "removeOwnLinkFromList");
   }
+  addNewLine();
+  addToggle("Group by section", "groupBySection");
   addNewLine();
   addResetStateButton();
 }
@@ -162,6 +186,37 @@ const showParent = (listItem) => {
   return false;
 };
 
+const showTask = (listItem) => {
+  switch (state.onlyWithTasks) {
+    case "all":
+    case "any":
+    case "yes":
+    case true:
+      return listItem.task;
+    case "done":
+    case "checked":
+    case "completed":
+    case "x":
+      return listItem.task && listItem.checked;
+    case "undone":
+    case "unchecked":
+    case "incomplete":
+    case " ":
+      return listItem.task && !listItem.checked;
+    default:
+      return listItem.task && listItem.status === state.onlyWithTasks;
+  }
+};
+
+const someOfMeAndMyChildren = (listItem, predicate) => {
+  console.log(listItem);
+  if (predicate(listItem)) return true;
+  if (listItem.children.length) {
+    return listItem.children.some((l) => someOfMeAndMyChildren(l, predicate));
+  }
+  return false;
+};
+
 const searchFor = (state.searchFor || "[[#]]").replaceAll(
   "[[#]]",
   `[[${fileName}]]`
@@ -188,6 +243,9 @@ const result = dv
       l.tags?.some((t) => searchForTags.some((tt) => t.includes(tt)))
   )
   .flatMap((l) => (showParent(l) ? [l] : l.children))
+  .flatMap((l) =>
+    !state.onlyWithTasks || someOfMeAndMyChildren(l, showTask) ? [l] : []
+  )
   .groupBy((l) => (state.groupBySection ? l.link : l.link.toFile()))
   .sort((g) => (state.sortByPath ? g : g.key.fileName()), "desc");
 
