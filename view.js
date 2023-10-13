@@ -272,7 +272,7 @@ let result = dv
   .flatMap(state.showTree ? tree : (l) => (showParent(l) ? [l] : l.children))
   .filter((l) => !state.onlyWithTasks || someOfMeAndMyChildren(l, showTask))
   .groupBy((l) => (state.groupBySection ? l.link : l.link.toFile()))
-  .sort((g) => (state.sortByPath ? g.key.fileName() : g), "desc")
+  .sort((g) => (state.sortByPath ? g : g.key.fileName()), "desc")
   ;
 
 if (state.showCopyFeedButton && state.showOptionsPanel) {
