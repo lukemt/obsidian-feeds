@@ -4,11 +4,13 @@ const config = {
   excludeFolders: ["Logseq/logseq"],
   includeFolders: [],
   oneliners: true,
+  showOptions: true,
   showOptionsPanel: false,
   showCopyFeedButton: true,
   showParentIfNotAlone: true,
   removeOwnLinkFromList: false,
   groupBySection: false,
+  hideHeaders: false,
   sortByPath: true,
   showTree: false,
 };
@@ -65,7 +67,10 @@ const addShowOptionsLink = () => {
     };
   }
   link.style.margin = "0.2em";
-  configEl.appendChild(link);
+  if (state.showOptions) {
+    // don't showOptions panel at all and configure via code
+    configEl.appendChild(link);
+  }
 };
 
 const addToggle = (label, prop) => {
@@ -154,6 +159,8 @@ if (state.showOptionsPanel) {
   addNewLine();
   addToggle("Group by section", "groupBySection");
   addNewLine();
+  addToggle("Hide header section names", "hideHeaders");
+  addNewLine();
   addResetStateButton();
 }
 
@@ -175,10 +182,10 @@ const tree = (listItem) => {
 
 const showParent = (listItem) => {
   if (listItem.section.subpath === fileName) return true;
-
-  const hasText = /[a-zA-Z0-9]/g.test(
-    listItem.text.replace(/\[\[[^\]]+\]\]/g, "")
-  );
+  const cleanText = listItem.text
+    .replace(/\[\[[^\]]+\]\]/g, "")  // match [[links]]
+    .replace(/#[^ ]+/g, "");  // match #nested/TAGS/100 until ` `
+  const hasText = /[a-zA-Z0-9]/g.test(cleanText);
   if (hasText) {
     if (
       state.oneliners ||
@@ -255,7 +262,7 @@ const query =
     ? ` AND (${state.excludeFolders.map((f) => `!"${f}"`).join(" OR ")})`
     : "");
 
-const result = dv
+let result = dv
   .pages(query)
   .file.lists.where(
     state.showTree
@@ -265,10 +272,22 @@ const result = dv
   .flatMap(state.showTree ? tree : (l) => (showParent(l) ? [l] : l.children))
   .filter((l) => !state.onlyWithTasks || someOfMeAndMyChildren(l, showTask))
   .groupBy((l) => (state.groupBySection ? l.link : l.link.toFile()))
-  .sort((g) => (state.sortByPath ? g : g.key.fileName()), "desc");
+  .sort((g) => (state.sortByPath ? g : g.key.fileName()), "desc")
+  ;
 
 if (state.showCopyFeedButton && state.showOptionsPanel) {
   addCopyFeedButton(result);
 }
 
-dv.taskList(result);
+if (state.hideHeaders) {
+  result = result
+    .flatMap((section) =>
+      section.rows.map((row) => ({
+        ...row,
+        text: `${section.key} - ${row.text}`,
+      }))
+    );
+  dv.taskList(result, false);
+} else {
+  dv.taskList(result);
+}
