@@ -1,7 +1,7 @@
 const config = {
   searchFor: "[[#]]",
   onlyWithTasks: false, // "all", "done", "undone"
-  excludeFolders: ["Logseq/logseq"],
+  excludeFolders: [],
   includeFolders: [],
   oneliners: true,
   showOptions: true,
@@ -10,7 +10,7 @@ const config = {
   showParentIfNotAlone: true,
   removeOwnLinkFromList: false,
   groupBySection: false,
-  hideHeaders: false,
+  collapseHeaders: false,
   sortByPath: true,
   showTree: false,
 };
@@ -159,7 +159,7 @@ if (state.showOptionsPanel) {
   addNewLine();
   addToggle("Group by section", "groupBySection");
   addNewLine();
-  addToggle("Hide header section names", "hideHeaders");
+  addToggle("Collapse header section names", "collapseHeaders");
   addNewLine();
   addResetStateButton();
 }
@@ -279,7 +279,7 @@ if (state.showCopyFeedButton && state.showOptionsPanel) {
   addCopyFeedButton(result);
 }
 
-if (state.hideHeaders) {
+if (state.collapseHeaders) {
   result = result
     .flatMap((section) =>
       section.rows.map((row) => ({
