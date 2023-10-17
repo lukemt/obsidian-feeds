@@ -1,4 +1,10 @@
-a:has(.feed-settings-button) {
+/* =============================================================================
+ * SETTINGS BUTTON
+ * =============================================================================
+ */
+
+/* Live Preview */
+.markdown-source-view a:has(.feed-settings-button) {
   margin: 0;
 }
 
@@ -22,4 +28,17 @@ a:has(.feed-settings-button) {
   .cm-embed-block:hover
   .feed-settings-button:hover {
   background-color: var(--background-modifier-hover);
+}
+
+/* Reading View */
+.markdown-preview-view .feed-settings-button {
+  float: right;
+  color: var(--icon-color);
+  opacity: var(--icon-opacity);
+  transition: opacity 0.15s ease-in-out;
+}
+.markdown-preview-view .feed-settings-button:hover {
+  float: right;
+  color: var(--text-normal);
+  opacity: var(--icon-opacity-hover);
 }
