@@ -1,0 +1,25 @@
+a:has(.feed-settings-button) {
+  margin: 0;
+}
+
+.markdown-source-view.mod-cm6 .feed-settings-button {
+  padding: var(--size-2-2) var(--size-2-3);
+  position: absolute;
+  top: var(--size-2-2);
+  right: calc(2 * var(--size-2-3) + var(--icon-size) + var(--size-2-3));
+  display: flex;
+  opacity: 0;
+  color: var(--text-muted);
+  border-radius: var(--radius-s);
+  cursor: var(--cursor);
+}
+
+.markdown-source-view.mod-cm6 .cm-embed-block:hover .feed-settings-button {
+  opacity: 1;
+}
+
+.markdown-source-view.mod-cm6
+  .cm-embed-block:hover
+  .feed-settings-button:hover {
+  background-color: var(--background-modifier-hover);
+}
