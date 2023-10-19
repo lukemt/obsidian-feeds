@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-feeds",
+  "name": "Obsidian Feeds",
+  "version": "0.0.1",
+  "minAppVersion": "1.2.0",
+  "description": "Magic feeds dataview query for obsidian",
+  "author": "Pash Shocky",
+  "authorUrl": "https://github.com/pashashocky",
+  "isDesktopOnly": false
+}

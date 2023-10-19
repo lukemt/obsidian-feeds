@@ -1,0 +1,33 @@
+name: Build and Release
+permissions:
+    contents: write
+on:
+    push:
+        tags:
+            - "*"
+jobs:
+    build:
+        permissions: write-all
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "19.x"
+            - name: Build
+              id: build
+              run: |
+                  npm install
+                  npm run build
+            # Create the release on github
+            - name: Release
+              uses: softprops/action-gh-release@v1
+              if: startsWith(github.ref, 'refs/tags/')
+              with:
+                  name: ${{  github.ref_name }}
+                  tag_name: ${{ github.ref }}
+                  files: |
+                      main.js
+                      manifest.json
+                      styles.css
