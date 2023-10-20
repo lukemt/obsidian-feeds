@@ -4,7 +4,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
-    project: ["tsconfig.json", ".eslintrc.js"],
+    project: ["tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
   extends: [
@@ -44,7 +44,10 @@ module.exports = {
     "import/no-unresolved": "off",
     "linebreak-style": ["error", "unix"],
     "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { args: "none", ignoreRestSiblings: true }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { args: "none", ignoreRestSiblings: true },
+    ],
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-types": [
       "error",

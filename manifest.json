@@ -3,8 +3,9 @@
   "name": "Obsidian Feeds",
   "version": "0.0.1",
   "minAppVersion": "1.2.0",
-  "description": "Magic feeds dataview query for obsidian",
-  "author": "Pash Shocky",
-  "authorUrl": "https://github.com/pashashocky",
+  "description": "Obsidian plugin to add magic feed views using Dataview",
+  "author": "LukeMT",
+  "authorUrl": "https://github.com/lukemt/",
+  "fundingUrl": "https://github.com/lukemt/",
   "isDesktopOnly": false
 }
