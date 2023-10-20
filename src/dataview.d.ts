@@ -24,4 +24,8 @@ declare module "obsidian" {
       ctx?: any,
     ): EventRef;
   }
+
+  interface Workspace {
+    on(name: "dataview:refresh-views", callback: () => void, ctx?: any): EventRef;
+  }
 }
