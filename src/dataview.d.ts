@@ -29,3 +29,10 @@ declare module "obsidian" {
     on(name: "dataview:refresh-views", callback: () => void, ctx?: any): EventRef;
   }
 }
+
+declare module "obsidian-dataview" {
+  interface DataviewSettings {
+    refreshEnabled: boolean;
+    enableDataviewJs: boolean;
+  }
+}

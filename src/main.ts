@@ -1,5 +1,5 @@
 import { Plugin } from "obsidian";
-import ObsidianFeeds from "./view";
+import ObsidianFeeds from "view";
 
 export default class ObsidianFeedsPlugin extends Plugin {
   /**

@@ -1,4 +1,4 @@
-const renderError = (container: HTMLElement, error: string) => {
+export function renderError(container: HTMLElement, error: string) {
   // render a custom error and style it
   const wrapper = container.createEl("div");
   wrapper.createEl("p", { text: `(Error) Obsidian Feeds: ${error}` });
@@ -8,6 +8,4 @@ const renderError = (container: HTMLElement, error: string) => {
   wrapper.style.backgroundColor = "#e50914";
   wrapper.style.color = "#fff";
   wrapper.style.fontWeight = "bolder";
-};
-
-export default renderError;
+}
