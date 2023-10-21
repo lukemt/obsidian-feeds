@@ -2,19 +2,37 @@ import { App, MarkdownPostProcessorContext, normalizePath, parseYaml } from "obs
 import { renderError } from "ui/render";
 
 export interface Settings {
-  path: string;
-  limit: number;
-  recursive: boolean;
-  sort: "asc" | "desc";
-  sortby: "name" | "mtime" | "ctime";
+  searchFor: string;
+  onlyWithTasks: boolean | "all" | "done" | "undone";
+  excludeFolders: string[];
+  includeFolders: string[];
+  oneliners: boolean;
+  showOptions: boolean;
+  showOptionsPanel: boolean;
+  showCopyFeedButton: boolean;
+  showParentIfNotAlone: boolean;
+  removeOwnLinkFromList: boolean;
+  groupBySection: boolean;
+  collapseHeaders: boolean;
+  sortByPath: boolean;
+  showTree: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  path: "",
-  limit: 0,
-  recursive: true,
-  sort: "desc",
-  sortby: "mtime",
+  searchFor: "[[#]]",
+  onlyWithTasks: false,
+  excludeFolders: [],
+  includeFolders: [],
+  oneliners: true,
+  showOptions: true,
+  showOptionsPanel: false,
+  showCopyFeedButton: true,
+  showParentIfNotAlone: true,
+  removeOwnLinkFromList: false,
+  groupBySection: false,
+  collapseHeaders: false,
+  sortByPath: true,
+  showTree: false,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,12 +44,7 @@ const lowercaseKeys = (obj: AnyObject, deep = false) =>
     return acc;
   }, {} as AnyObject);
 
-const getSettings = (
-  src: string,
-  container: HTMLElement,
-  app: App,
-  ctx: MarkdownPostProcessorContext,
-) => {
+const getSettings = (src: string, container: HTMLElement) => {
   let settingsSrc: AnyObject = parseYaml(src);
   if (settingsSrc === undefined) {
     const error = "Cannot parse YAML!";
@@ -43,20 +56,8 @@ const getSettings = (
     settingsSrc = lowercaseKeys(settingsSrc);
   }
 
-  const settings = DEFAULT_SETTINGS;
-  if (settingsSrc === null || !settingsSrc.path) {
-    const file = app.vault.getAbstractFileByPath(ctx.sourcePath)!.parent!;
-    settings.path = file.path;
-  } else {
-    settings.path = settingsSrc.path;
-  }
-  settings.path = normalizePath(settings.path);
-  settings.limit = settingsSrc?.limit ?? settings.limit;
-  settings.recursive = settingsSrc?.recursive ?? settings.recursive;
-  settings.sort = settingsSrc?.sort ?? settings.sort;
-  settings.sortby = settingsSrc?.sortby ?? settings.sortby;
-
-  return settings;
+  const settings: Settings = DEFAULT_SETTINGS;
+  return { ...settings, ...settingsSrc };
 };
 
 export default getSettings;

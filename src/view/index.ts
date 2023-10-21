@@ -18,7 +18,7 @@ export default class ObsidianFeeds extends MarkdownRenderChild {
     public ctx: MarkdownPostProcessorContext,
   ) {
     super(containerEl);
-    this.settings = getSettings(src, containerEl, app, ctx);
+    this.settings = getSettings(src, containerEl);
   }
 
   async onload() {
@@ -31,7 +31,13 @@ export default class ObsidianFeeds extends MarkdownRenderChild {
     }
 
     const dvApi = getAPI();
-    const feedsRenderer = new FeedsRenderer(dvApi, this.containerEl, this.ctx, this);
+    const feedsRenderer = new FeedsRenderer(
+      dvApi,
+      this.settings,
+      this.containerEl,
+      this.ctx,
+      this,
+    );
     this.addChild(new RefreshableRenderer(dvApi, this.containerEl, feedsRenderer));
   }
 
