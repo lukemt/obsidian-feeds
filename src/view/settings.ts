@@ -28,8 +28,8 @@ const lowercaseKeys = (obj: AnyObject, deep = false) =>
 
 const getSettings = (
   src: string,
-  app: App,
   container: HTMLElement,
+  app: App,
   ctx: MarkdownPostProcessorContext,
 ) => {
   let settingsSrc: AnyObject = parseYaml(src);
