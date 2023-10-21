@@ -30,15 +30,8 @@ export default class ObsidianFeeds extends MarkdownRenderChild {
       throw new Error(error);
     }
 
-    const dvApi = getAPI();
-    const feedsRenderer = new FeedsRenderer(
-      dvApi,
-      this.settings,
-      this.containerEl,
-      this.ctx,
-      this,
-    );
-    this.addChild(new RefreshableRenderer(dvApi, this.containerEl, feedsRenderer));
+    const dvApi = getAPI(this.app);
+    this.addChild(new FeedsRenderer(dvApi, this.settings, this.containerEl, this.ctx));
   }
 
   async onunload() {}

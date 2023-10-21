@@ -1,33 +1,33 @@
 import { App, Component, MarkdownPostProcessorContext, TFile } from "obsidian";
 import { DataviewApi } from "obsidian-dataview";
-import { Renderer } from "ui/renderer";
+import { RefreshableRenderer } from "ui/renderer";
 import { Settings } from "./settings";
 
-export default class FeedsRenderer extends Renderer {
-  private app: App;
-  private state: Settings;
-  private file: TFile;
+export default class FeedsRenderer extends RefreshableRenderer {
+  public app: App;
+  public state: Settings;
+  public file: TFile;
+  private containerParentEl: HTMLElement;
 
   constructor(
     public api: DataviewApi,
     public settings: Settings,
     public containerEl: HTMLElement,
     public context: MarkdownPostProcessorContext,
-    public component: Component,
   ) {
-    super(api, containerEl, context, component);
-    this.state = this.getState();
+    super(api, containerEl);
     this.app = api.app;
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
       this.file = file;
     }
 
-    containerEl._feedState = containerEl._feedState ?? {};
+    this.state = this.initState();
   }
 
-  getState() {
-    const uiState = this.containerEl._feedState;
+  initState() {
+    const uiState = this.containerParentEl._feedState;
+    console.log({ parentEl: this.containerParentEl, uiState });
     return {
       ...this.settings,
       ...uiState,
@@ -35,10 +35,10 @@ export default class FeedsRenderer extends Renderer {
   }
 
   setStateProperty(prop, value) {
-    this.containerEl._feedState[prop] = value;
+    this.containerParentEl._feedState[prop] = value;
   }
 
-  async render() {
+  async run() {
     // const configEl = this.containerEl.createDiv();
 
     // const addShowOptionsLink = () => {
@@ -261,9 +261,9 @@ export default class FeedsRenderer extends Renderer {
           text: `${section.key} - ${row.text}`,
         })),
       );
-      this.api.taskList(result, false, this.containerEl, this.component);
+      this.api.taskList(result, false, this.containerEl, this);
     } else {
-      this.api.taskList(result, true, this.containerEl, this.component);
+      this.api.taskList(result, true, this.containerEl, this);
     }
   }
 }

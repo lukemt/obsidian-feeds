@@ -9,7 +9,7 @@ export abstract class DataviewRefreshableRenderer extends MarkdownRenderChild {
     public container: HTMLElement,
     public index: FullIndex,
     public app: App,
-    public settings: DataviewSettings,
+    public dvSettings: DataviewSettings,
   ) {
     super(container);
     this.lastReload = 0;
@@ -34,7 +34,7 @@ export abstract class DataviewRefreshableRenderer extends MarkdownRenderChild {
     if (
       this.lastReload != this.index.revision &&
       this.container.isShown() &&
-      this.settings.refreshEnabled
+      this.dvSettings.refreshEnabled
     ) {
       this.lastReload = this.index.revision;
       this.render();
