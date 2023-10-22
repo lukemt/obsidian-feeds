@@ -5,7 +5,6 @@ import ObsidianFeedsPlugin from "main";
 import getSettings, { Settings } from "view/settings";
 import FeedsRenderer from "view/view";
 import { renderError } from "ui/render";
-import { RefreshableRenderer } from "ui/renderer";
 
 export default class ObsidianFeeds extends MarkdownRenderChild {
   private settings: Settings;

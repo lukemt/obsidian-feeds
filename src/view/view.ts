@@ -7,7 +7,6 @@ export default class FeedsRenderer extends RefreshableRenderer {
   public app: App;
   public state: Settings;
   public file: TFile;
-  private containerParentEl: HTMLElement;
 
   constructor(
     public api: DataviewApi,
@@ -17,26 +16,19 @@ export default class FeedsRenderer extends RefreshableRenderer {
   ) {
     super(api, containerEl);
     this.app = api.app;
+    this.state = this.initState();
+
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
       this.file = file;
     }
-
-    this.state = this.initState();
   }
 
   initState() {
-    const uiState = this.containerParentEl._feedState;
-    console.log({ parentEl: this.containerParentEl, uiState });
-    return {
-      ...this.settings,
-      ...uiState,
-    };
+    return this.settings;
   }
 
-  setStateProperty(prop, value) {
-    this.containerParentEl._feedState[prop] = value;
-  }
+  setStateProperty(prop, value) {}
 
   async run() {
     // const configEl = this.containerEl.createDiv();
@@ -220,7 +212,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
       return false;
     };
 
-    const searchFor = (this.state.searchFor || "[[#]]").replaceAll(
+    const searchFor = this.state.searchFor.replaceAll(
       "[[#]]",
       `[[${this.file.basename}]]`,
     );
@@ -253,7 +245,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
     //   addCopyFeedButton(result);
     // }
 
-    console.log({ file: this.file, query, result });
+    let group = true;
     if (this.state.collapseHeaders) {
       result = result.flatMap(section =>
         section.rows.map(row => ({
@@ -261,9 +253,8 @@ export default class FeedsRenderer extends RefreshableRenderer {
           text: `${section.key} - ${row.text}`,
         })),
       );
-      this.api.taskList(result, false, this.containerEl, this);
-    } else {
-      this.api.taskList(result, true, this.containerEl, this);
+      group = false;
     }
+    this.api.taskList(result, group, this.containerEl, this);
   }
 }
