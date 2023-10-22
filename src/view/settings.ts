@@ -1,4 +1,4 @@
-import { App, MarkdownPostProcessorContext, normalizePath, parseYaml } from "obsidian";
+import { parseYaml } from "obsidian";
 import { renderError } from "ui/render";
 
 export interface Settings {

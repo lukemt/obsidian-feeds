@@ -1,4 +1,4 @@
-import { App, Component, MarkdownPostProcessorContext, TFile } from "obsidian";
+import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
 import { DataviewApi } from "obsidian-dataview";
 import { RefreshableRenderer } from "ui/renderer";
 import { Settings } from "./settings";

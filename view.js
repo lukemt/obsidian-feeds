@@ -19,38 +19,38 @@
 // const filePath = dv.current()?.file?.path;
 // if (fileName == null) dv.el("div", "Please reopen the file to show the feed");
 
-const configEl = dv.el("div", "");
-const configContainerEl = configEl.parentElement.parentElement ?? {};
-configContainerEl._feedState = configContainerEl._feedState ?? {};
+// const configEl = dv.el("div", "");
+// const configContainerEl = configEl.parentElement.parentElement ?? {};
+// configContainerEl._feedState = configContainerEl._feedState ?? {};
 
-const getState = () => {
-  const uiState = configContainerEl._feedState;
-  let params = {};
-  if (typeof input === "string") {
-    params = { searchFor: input };
-  } else if (typeof input === "object") {
-    params = input;
-  }
-  return {
-    ...config,
-    ...params,
-    ...uiState,
-  };
-};
-const state = getState();
+// const getState = () => {
+//   const uiState = configContainerEl._feedState;
+//   let params = {};
+//   if (typeof input === "string") {
+//     params = { searchFor: input };
+//   } else if (typeof input === "object") {
+//     params = input;
+//   }
+//   return {
+//     ...config,
+//     ...params,
+//     ...uiState,
+//   };
+// };
+// const state = getState();
 
-const setStateProperty = (propName, value, refresh = true) => {
-  configContainerEl._feedState[propName] = value;
+// const setStateProperty = (propName, value, refresh = true) => {
+//   configContainerEl._feedState[propName] = value;
 
-  if (refresh) {
-    // set height to client height to reduce flickering
-    configContainerEl.style.height = configContainerEl.clientHeight + "px";
-    app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-    setTimeout(() => {
-      configContainerEl.style.height = "";
-    }, 100);
-  }
-};
+//   if (refresh) {
+//     // set height to client height to reduce flickering
+//     configContainerEl.style.height = configContainerEl.clientHeight + "px";
+//     app.commands.executeCommandById("dataview:dataview-force-refresh-views");
+//     setTimeout(() => {
+//       configContainerEl.style.height = "";
+//     }, 100);
+//   }
+// };
 
 // const addShowOptionsLink = () => {
 //   const link = document.createElement("a");
