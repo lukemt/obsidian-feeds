@@ -5,6 +5,9 @@ import { DataviewApi } from "obsidian-dataview";
 
 declare module "obsidian" {
   interface App {
+    commands: {
+      executeCommandById: (string) => void;
+    };
     plugins: {
       enabledPlugins: Set<string>;
       plugins: {

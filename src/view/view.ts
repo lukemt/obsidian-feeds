@@ -7,6 +7,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
   public app: App;
   public state: Settings;
   public file: TFile;
+  public configEl: HTMLElement;
 
   constructor(
     public api: DataviewApi,
@@ -25,122 +26,121 @@ export default class FeedsRenderer extends RefreshableRenderer {
   }
 
   initState() {
-    return this.settings;
+    return { ...this.settings };
   }
 
-  setStateProperty(prop, value) {}
+  setStateProperty(prop: string, value: string, refresh = true) {
+    this.state[prop] = value;
+    if (refresh) {
+      this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
+    }
+  }
 
   async run() {
-    // const configEl = this.containerEl.createDiv();
+    this.configEl = this.containerEl.createDiv("options");
 
-    // const addShowOptionsLink = () => {
-    //   // don't showOptions panel at all and configure via code
-    //   if (this.state.showOptions) {
-    //     const link = configEl.createEl("a");
-    //     if (this.state.showOptionsPanel) {
-    //       link.textContent = "< Hide options";
-    //       link.onclick = () => {
-    //         this.setStateProperty("showOptionsPanel", false);
-    //       };
-    //     } else {
-    //       link.textContent = "Show options >";
-    //       link.onclick = () => {
-    //         this.setStateProperty("showOptionsPanel", true);
-    //       };
-    //     }
-    //     link.style.margin = "0.2em";
-    //   }
-    // };
+    const addShowOptionsLink = () => {
+      if (this.state.showOptions) {
+        const link = this.configEl.createEl("a");
+        if (this.state.showOptionsPanel) {
+          link.textContent = "< Hide options";
+          link.onclick = () => {
+            this.setStateProperty("showOptionsPanel", false);
+          };
+        } else {
+          link.textContent = "Show options >";
+          link.onclick = () => {
+            this.setStateProperty("showOptionsPanel", true);
+          };
+        }
+        link.style.margin = "0.2em";
+      }
+    };
 
-    // const addToggle = (label, prop) => {
-    //   const toggle = configEl.createEl("input");
-    //   toggle.type = "checkbox";
-    //   toggle.checked = this.state[prop];
-    //   toggle.addEventListener("change", () => {
-    //     this.setStateProperty(prop, toggle.checked);
-    //   });
-    //   toggle.style.margin = "0 0.5em -0.1em";
-    //   const labelEl = document.createElement("label");
-    //   labelEl.appendChild(toggle);
-    //   labelEl.appendChild(document.createTextNode(label));
-    // };
+    const addToggle = (label, prop) => {
+      const labelEl = this.configEl.createEl("label");
+      const toggle = labelEl.createEl("input");
+      toggle.type = "checkbox";
+      toggle.checked = this.state[prop];
+      toggle.addEventListener("change", () => {
+        this.setStateProperty(prop, toggle.checked);
+      });
+      toggle.style.margin = "0 0.5em -0.1em";
+      labelEl.appendChild(document.createTextNode(label));
+    };
 
-    // const addSelect = (label, prop, options) => {
-    //   const select = document.createElement("select");
-    //   select.style.margin = "0 0.5em -0.1em";
-    //   select.onchange = () => {
-    //     this.setStateProperty(prop, select.value);
-    //   };
-    //   options.forEach(o => {
-    //     const option = document.createElement("option");
-    //     option.value = o;
-    //     option.textContent = o;
-    //     select.appendChild(option);
-    //   });
-    //   select.value = this.state[prop];
-    //   const labelEl = document.createElement("label");
-    //   labelEl.appendChild(document.createTextNode(label));
-    //   labelEl.appendChild(select);
-    //   configEl.appendChild(labelEl);
-    // };
+    const addSelect = (label, prop, options) => {
+      const select = document.createElement("select");
+      select.style.margin = "0 0.5em -0.1em";
+      select.onchange = () => {
+        this.setStateProperty(prop, select.value);
+      };
+      options.forEach(o => {
+        const option = document.createElement("option");
+        option.value = o;
+        option.textContent = o;
+        select.appendChild(option);
+      });
+      select.value = this.state[prop];
+      const labelEl = document.createElement("label");
+      labelEl.appendChild(document.createTextNode(label));
+      labelEl.appendChild(select);
+      this.configEl.appendChild(labelEl);
+    };
 
-    // const addResetStateButton = () => {
-    //   const button = document.createElement("button");
-    //   button.textContent = "Reset options";
-    //   button.onclick = () => {
-    //     this.containerEl._feedState = {
-    //       showOptionsPanel: true,
-    //     };
-    //     this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-    //   };
-    //   configEl.appendChild(button);
-    // };
+    const addResetStateButton = () => {
+      const button = document.createElement("button");
+      button.textContent = "Reset options";
+      button.onclick = () => {
+        this.state = { ...this.initState(), showOptionsPanel: true };
+        this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
+      };
+      this.configEl.appendChild(button);
+    };
 
-    // const addNewLine = () => {
-    //   configEl.createEl("br");
-    // };
+    const addNewLine = () => {
+      this.configEl.createEl("br");
+    };
 
-    // const addCopyFeedButton = result => {
-    //   const md = this.api
-    //     .markdownTaskList(result)
-    //     .replace(/    /gm, "\t")
-    //     .replace(/^# \[\[[^\|]+\|([^\]]+)\]\]\n\n/gm, (a, b) => `- [[${b}]]\n`);
-    //   if (md) {
-    //     const button = configEl.createEl("button");
-    //     button.textContent = "📋 Copy Feed as markdown";
-    //     button.onclick = () => {
-    //       navigator.clipboard.writeText(md);
-    //       button.textContent = "📋 Copied!";
-    //     };
-    //     button.style.margin = "0 1em";
-    //   }
-    // };
+    const addCopyFeedButton = result => {
+      const md = this.api
+        .markdownTaskList(result)
+        .replace(/    /gm, "\t")
+        .replace(/^# \[\[[^\|]+\|([^\]]+)\]\]\n\n/gm, (a, b) => `- [[${b}]]\n`);
+      if (md) {
+        const button = this.configEl.createEl("button");
+        button.textContent = "📋 Copy Feed as markdown";
+        button.onclick = () => {
+          navigator.clipboard.writeText(md);
+          button.textContent = "📋 Copied!";
+        };
+        button.style.margin = "0 1em";
+      }
+    };
 
-    // addShowOptionsLink();
-    // if (this.state.showOptionsPanel) {
-    //   addNewLine();
-    //   addSelect("Only with tasks", "onlyWithTasks", ["", "any", "undone", "done"]);
-    //   addNewLine();
-    //   addToggle("Show tree", "showTree");
-    //   if (!this.state.showTree) {
-    //     addNewLine();
-    //     addToggle("Find oneliners", "oneliners");
-    //     addNewLine();
-    //     addToggle("Show parent if not alone", "showParentIfNotAlone");
-    //     if (this.state.showParentIfNotAlone) {
-    //       addNewLine();
-    //       addToggle("Remove own link from list", "removeOwnLinkFromList");
-    //     }
-    //   }
-    //   addNewLine();
-    //   addToggle("Group by section", "groupBySection");
-    //   addNewLine();
-    //   addToggle("Collapse header section names", "collapseHeaders");
-    //   addNewLine();
-    //   addResetStateButton();
-    // }
-
-    // -------- Settings end
+    addShowOptionsLink();
+    if (this.state.showOptionsPanel) {
+      addNewLine();
+      addSelect("Only with tasks", "onlyWithTasks", ["", "any", "undone", "done"]);
+      addNewLine();
+      addToggle("Show tree", "showTree");
+      if (!this.state.showTree) {
+        addNewLine();
+        addToggle("Find oneliners", "oneliners");
+        addNewLine();
+        addToggle("Show parent if not alone", "showParentIfNotAlone");
+        if (this.state.showParentIfNotAlone) {
+          addNewLine();
+          addToggle("Remove own link from list", "removeOwnLinkFromList");
+        }
+      }
+      addNewLine();
+      addToggle("Group by section", "groupBySection");
+      addNewLine();
+      addToggle("Collapse header section names", "collapseHeaders");
+      addNewLine();
+      addResetStateButton();
+    }
 
     const isMatch = l =>
       l.section.subpath === this.file.basename ||
@@ -239,11 +239,11 @@ export default class FeedsRenderer extends RefreshableRenderer {
       .flatMap(this.state.showTree ? tree : l => (showParent(l) ? [l] : l.children))
       .filter(l => !this.state.onlyWithTasks || someOfMeAndMyChildren(l, showTask))
       .groupBy(l => (this.state.groupBySection ? l.link : l.link.toFile()))
-      .sort(g => (this.state.sortByPath ? g : g.key.fileName()), "desc");
+      .sort(g => (this.state.sortByPath ? g : g.key.fileName()), this.state.sort);
 
-    // if (this.state.showCopyFeedButton && this.state.showOptionsPanel) {
-    //   addCopyFeedButton(result);
-    // }
+    if (this.state.showCopyFeedButton && this.state.showOptionsPanel) {
+      addCopyFeedButton(result);
+    }
 
     let group = true;
     if (this.state.collapseHeaders) {
