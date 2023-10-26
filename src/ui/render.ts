@@ -24,7 +24,7 @@ export function addSelect({
   value: string | boolean;
   onChange: (v: string | boolean) => void;
   label: string;
-  options: string[];
+  options: (string | boolean)[];
 }) {
   const select = document.createElement("select");
   select.style.margin = "0 0.5em -0.1em";
@@ -36,8 +36,9 @@ export function addSelect({
   };
   options.forEach(o => {
     const option = document.createElement("option");
-    option.value = o;
-    option.textContent = o;
+    const ov = typeof o === "boolean" ? o.toString() : o;
+    option.value = ov;
+    option.textContent = ov;
     select.appendChild(option);
   });
   select.value = typeof value === "boolean" ? value.toString() : value;
@@ -102,7 +103,7 @@ export function addNewLine(container: HTMLElement) {
 export function buildConfig(
   container: HTMLElement,
   state: Settings,
-  setState: (key: string, value: any) => void,
+  setState: <T extends keyof Settings>(key: T, value: Settings[T]) => void,
   resetState: () => void,
 ) {
   const addShowOptionsLink = () => {
@@ -114,7 +115,7 @@ export function buildConfig(
           setState("showOptionsPanel", false);
         };
       } else {
-        link.textContent = "Show options >";
+        link.textContent = "⚙";
         link.onclick = () => {
           setState("showOptionsPanel", true);
         };

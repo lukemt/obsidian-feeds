@@ -35,10 +35,9 @@ export default class FeedsRenderer extends RefreshableRenderer {
     this.plugin.saveData(this.state);
   }
 
-  async setStateProperty(prop: string, value: string, refresh = true) {
+  async setStateProperty<T extends keyof Settings>(prop: T, value: Settings[T]) {
     this.state[prop] = value;
-    console.log({ prop, value, refresh });
-    if (refresh) {
+    if (this.api.settings.refreshEnabled) {
       this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
     }
     this.plugin.saveData(this.state);

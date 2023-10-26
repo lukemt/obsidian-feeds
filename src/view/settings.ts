@@ -4,7 +4,7 @@ import { renderError } from "ui/render";
 
 export interface Settings {
   searchFor: string;
-  onlyWithTasks: boolean | "all" | "done" | "undone";
+  onlyWithTasks: boolean | string;
   excludeFolders: string[];
   includeFolders: string[];
   oneliners: boolean;
