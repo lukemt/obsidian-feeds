@@ -1,7 +1,8 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
-import { DataviewApi } from "obsidian-dataview";
+import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
 import { RefreshableRenderer } from "ui/renderer";
 import { Settings } from "./settings";
+import { addCopyFeedButton, buildConfig } from "ui/render";
 
 export default class FeedsRenderer extends RefreshableRenderer {
   public app: App;
@@ -31,6 +32,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
 
   setStateProperty(prop: string, value: string, refresh = true) {
     this.state[prop] = value;
+    console.log({ prop, value, refresh });
     if (refresh) {
       this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
     }
@@ -38,116 +40,24 @@ export default class FeedsRenderer extends RefreshableRenderer {
 
   async run() {
     this.configEl = this.containerEl.createDiv("options");
-
-    const addShowOptionsLink = () => {
-      if (this.state.showOptions) {
-        const link = this.configEl.createEl("a");
-        if (this.state.showOptionsPanel) {
-          link.textContent = "< Hide options";
-          link.onclick = () => {
-            this.setStateProperty("showOptionsPanel", false);
-          };
-        } else {
-          link.textContent = "Show options >";
-          link.onclick = () => {
-            this.setStateProperty("showOptionsPanel", true);
-          };
-        }
-        link.style.margin = "0.2em";
-      }
-    };
-
-    const addToggle = (label, prop) => {
-      const labelEl = this.configEl.createEl("label");
-      const toggle = labelEl.createEl("input");
-      toggle.type = "checkbox";
-      toggle.checked = this.state[prop];
-      toggle.addEventListener("change", () => {
-        this.setStateProperty(prop, toggle.checked);
-      });
-      toggle.style.margin = "0 0.5em -0.1em";
-      labelEl.appendChild(document.createTextNode(label));
-    };
-
-    const addSelect = (label, prop, options) => {
-      const select = document.createElement("select");
-      select.style.margin = "0 0.5em -0.1em";
-      select.onchange = () => {
-        this.setStateProperty(prop, select.value);
-      };
-      options.forEach(o => {
-        const option = document.createElement("option");
-        option.value = o;
-        option.textContent = o;
-        select.appendChild(option);
-      });
-      select.value = this.state[prop];
-      const labelEl = document.createElement("label");
-      labelEl.appendChild(document.createTextNode(label));
-      labelEl.appendChild(select);
-      this.configEl.appendChild(labelEl);
-    };
-
-    const addResetStateButton = () => {
-      const button = document.createElement("button");
-      button.textContent = "Reset options";
-      button.onclick = () => {
+    buildConfig(
+      this.configEl,
+      this.state,
+      (k, v) => this.setStateProperty(k, v),
+      () => {
         this.state = { ...this.initState(), showOptionsPanel: true };
         this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-      };
-      this.configEl.appendChild(button);
-    };
+      },
+    );
 
-    const addNewLine = () => {
-      this.configEl.createEl("br");
-    };
-
-    const addCopyFeedButton = result => {
-      const md = this.api
-        .markdownTaskList(result)
-        .replace(/    /gm, "\t")
-        .replace(/^# \[\[[^\|]+\|([^\]]+)\]\]\n\n/gm, (a, b) => `- [[${b}]]\n`);
-      if (md) {
-        const button = this.configEl.createEl("button");
-        button.textContent = "📋 Copy Feed as markdown";
-        button.onclick = () => {
-          navigator.clipboard.writeText(md);
-          button.textContent = "📋 Copied!";
-        };
-        button.style.margin = "0 1em";
-      }
-    };
-
-    addShowOptionsLink();
-    if (this.state.showOptionsPanel) {
-      addNewLine();
-      addSelect("Only with tasks", "onlyWithTasks", ["", "any", "undone", "done"]);
-      addNewLine();
-      addToggle("Show tree", "showTree");
-      if (!this.state.showTree) {
-        addNewLine();
-        addToggle("Find oneliners", "oneliners");
-        addNewLine();
-        addToggle("Show parent if not alone", "showParentIfNotAlone");
-        if (this.state.showParentIfNotAlone) {
-          addNewLine();
-          addToggle("Remove own link from list", "removeOwnLinkFromList");
-        }
-      }
-      addNewLine();
-      addToggle("Group by section", "groupBySection");
-      addNewLine();
-      addToggle("Collapse header section names", "collapseHeaders");
-      addNewLine();
-      addResetStateButton();
-    }
-
-    const isMatch = l =>
+    const isMatch = (l: Literal) =>
       l.section.subpath === this.file.basename ||
-      l.outlinks?.some(o => searchForLinks.includes(`[[${o.fileName()}]]`)) ||
-      l.tags?.some(t => searchForTags.some(tt => t.includes(tt)));
+      l.outlinks?.some((o: Literal) =>
+        searchForLinks.includes(`[[${o.fileName()}]]`),
+      ) ||
+      l.tags?.some((t: Literal) => searchForTags.some(tt => t.includes(tt)));
 
-    const tree = listItem => {
+    const tree = (listItem: ListItem) => {
       // attention: this mutates the list item
       if (isMatch(listItem)) {
         return [listItem];
@@ -156,7 +66,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
       return listItem.children.length ? [listItem] : [];
     };
 
-    const showParent = listItem => {
+    const showParent = (listItem: ListItem) => {
       if (listItem.section.subpath === this.file.basename) return true;
       const cleanText = listItem.text
         .replace(/\[\[[^\]]+\]\]/g, "") // match [[links]]
@@ -176,7 +86,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
       if (this.state.showParentIfNotAlone) {
         const textWithoutOwnLink = listItem.text
           .replace(`[[${this.file.basename}]]`, "")
-          .replace(/^[^\[]+/, "")
+          .replace(/^[^[]+/, "")
           .replace(/[^\]]+$/, "");
 
         if (textWithoutOwnLink) {
@@ -190,7 +100,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
       return false;
     };
 
-    const showTask = listItem => {
+    const showTask = (listItem: ListItem) => {
       switch (this.state.onlyWithTasks) {
         case "all":
         case true:
@@ -204,10 +114,15 @@ export default class FeedsRenderer extends RefreshableRenderer {
       }
     };
 
-    const someOfMeAndMyChildren = (listItem, predicate) => {
+    const someOfMeAndMyChildren = (
+      listItem: ListItem,
+      predicate: (l: Literal) => boolean,
+    ) => {
       if (predicate(listItem)) return true;
       if (listItem.children.length) {
-        return listItem.children.some(l => someOfMeAndMyChildren(l, predicate));
+        return listItem.children.some((l: Literal) =>
+          someOfMeAndMyChildren(l, predicate),
+        );
       }
       return false;
     };
@@ -231,24 +146,31 @@ export default class FeedsRenderer extends RefreshableRenderer {
 
     let result = this.api
       .pages(query)
-      .file.lists.where(
+      .file.lists.filter(
         this.state.showTree
-          ? l => !l.parent && someOfMeAndMyChildren(l, isMatch)
+          ? (l: Literal) => !l.parent && someOfMeAndMyChildren(l, isMatch)
           : isMatch,
       )
-      .flatMap(this.state.showTree ? tree : l => (showParent(l) ? [l] : l.children))
-      .filter(l => !this.state.onlyWithTasks || someOfMeAndMyChildren(l, showTask))
-      .groupBy(l => (this.state.groupBySection ? l.link : l.link.toFile()))
-      .sort(g => (this.state.sortByPath ? g : g.key.fileName()), this.state.sort);
+      .flatMap(
+        this.state.showTree ? tree : (l: Literal) => (showParent(l) ? [l] : l.children),
+      )
+      .filter(
+        (l: Literal) => !this.state.onlyWithTasks || someOfMeAndMyChildren(l, showTask),
+      )
+      .groupBy((l: Literal) => (this.state.groupBySection ? l.link : l.link.toFile()))
+      .sort(
+        (l: Literal) => (this.state.sortByPath ? l : l.key.fileName()),
+        this.state.sort,
+      );
 
     if (this.state.showCopyFeedButton && this.state.showOptionsPanel) {
-      addCopyFeedButton(result);
+      addCopyFeedButton(this.configEl, this.api, result);
     }
 
     let group = true;
     if (this.state.collapseHeaders) {
-      result = result.flatMap(section =>
-        section.rows.map(row => ({
+      result = result.flatMap((section: Literal) =>
+        section.rows.map((row: Literal) => ({
           ...row,
           text: `${section.key} - ${row.text}`,
         })),
