@@ -4,10 +4,7 @@ import { DataviewRefreshableRenderer } from "ui/refreshable-view";
 import { renderError } from "ui/render";
 
 export abstract class RefreshableRenderer extends DataviewRefreshableRenderer {
-  constructor(
-    public api: DataviewApi,
-    public containerEl: HTMLElement,
-  ) {
+  constructor(public api: DataviewApi, public containerEl: HTMLElement) {
     super(containerEl, api.index, api.app, api.settings);
   }
 

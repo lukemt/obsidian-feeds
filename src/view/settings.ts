@@ -1,3 +1,4 @@
+import ObsidianFeedsPlugin from "main";
 import { parseYaml } from "obsidian";
 import { renderError } from "ui/render";
 
@@ -19,7 +20,7 @@ export interface Settings {
   showTree: boolean;
 }
 
-const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_SETTINGS: Settings = {
   searchFor: "[[#]]",
   onlyWithTasks: false,
   excludeFolders: [],
@@ -37,15 +38,21 @@ const DEFAULT_SETTINGS: Settings = {
   showTree: false,
 };
 
-const getSettings = (src: string, container: HTMLElement) => {
+const getSettings = async (
+  plugin: ObsidianFeedsPlugin,
+  src: string,
+  container: HTMLElement,
+) => {
   const settingsSrc = parseYaml(src);
   if (settingsSrc === undefined) {
     const error = "Cannot parse YAML!";
     renderError(container, error);
     throw new Error(error);
   }
-  const settings: Settings = DEFAULT_SETTINGS;
-  return { ...settings, ...settingsSrc };
+  const settings = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
+  const newSettings = { ...settings, ...settingsSrc };
+  plugin.saveData(newSettings);
+  return newSettings;
 };
 
 export default getSettings;

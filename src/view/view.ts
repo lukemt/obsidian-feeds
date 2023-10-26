@@ -1,8 +1,10 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
 import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
-import { RefreshableRenderer } from "ui/renderer";
+import { RefreshableRenderer } from "ui/refreshable-renderer";
 import { Settings } from "./settings";
 import { addCopyFeedButton, buildConfig } from "ui/render";
+import { DEFAULT_SETTINGS } from "view/settings";
+import ObsidianFeedsPlugin from "main";
 
 export default class FeedsRenderer extends RefreshableRenderer {
   public app: App;
@@ -11,6 +13,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
   public configEl: HTMLElement;
 
   constructor(
+    public plugin: ObsidianFeedsPlugin,
     public api: DataviewApi,
     public settings: Settings,
     public containerEl: HTMLElement,
@@ -18,7 +21,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
   ) {
     super(api, containerEl);
     this.app = api.app;
-    this.state = this.initState();
+    this.state = { ...this.settings };
 
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
@@ -27,15 +30,18 @@ export default class FeedsRenderer extends RefreshableRenderer {
   }
 
   initState() {
-    return { ...this.settings };
+    this.state = { ...DEFAULT_SETTINGS, showOptionsPanel: true };
+    this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
+    this.plugin.saveData(this.state);
   }
 
-  setStateProperty(prop: string, value: string, refresh = true) {
+  async setStateProperty(prop: string, value: string, refresh = true) {
     this.state[prop] = value;
     console.log({ prop, value, refresh });
     if (refresh) {
       this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
     }
+    this.plugin.saveData(this.state);
   }
 
   async run() {
@@ -44,10 +50,7 @@ export default class FeedsRenderer extends RefreshableRenderer {
       this.configEl,
       this.state,
       (k, v) => this.setStateProperty(k, v),
-      () => {
-        this.state = { ...this.initState(), showOptionsPanel: true };
-        this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-      },
+      () => this.initState(),
     );
 
     const isMatch = (l: Literal) =>
