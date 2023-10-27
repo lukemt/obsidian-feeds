@@ -1,0 +1,39 @@
+import { App, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
+import { getAPI, isPluginEnabled } from "obsidian-dataview";
+
+import ObsidianFeedsPlugin from "main";
+import getSettings, { Settings } from "view/settings";
+import FeedsRenderer from "view/view";
+import { renderError } from "ui/render";
+
+export default class ObsidianFeeds extends MarkdownRenderChild {
+  private settings: Settings;
+
+  constructor(
+    public plugin: ObsidianFeedsPlugin,
+    public src: string,
+    public containerEl: HTMLElement,
+    public app: App,
+    public ctx: MarkdownPostProcessorContext,
+  ) {
+    super(containerEl);
+  }
+
+  async onload() {
+    const hasDataView = isPluginEnabled(this.app);
+    if (!hasDataView) {
+      const error =
+        "Dataview plugin is not installed. Please install it from Community plugins.";
+      renderError(this.containerEl, error);
+      throw new Error(error);
+    }
+
+    this.settings = await getSettings(this.plugin, this.src, this.containerEl);
+    const dvApi = getAPI(this.app);
+    this.addChild(
+      new FeedsRenderer(this.plugin, dvApi, this.settings, this.containerEl, this.ctx),
+    );
+  }
+
+  async onunload() {}
+}

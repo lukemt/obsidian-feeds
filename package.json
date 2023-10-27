@@ -1,0 +1,44 @@
+{
+  "name": "note-feed",
+  "version": "0.0.3",
+  "description": "Obsidian plugin to add magic feed views using Dataview",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "prettier": "prettier --write 'src/**/*.+(ts|tsx|json|html|css)' 'styles.css'",
+    "check-format": "npx prettier --check src",
+    "eslint": "eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "version": "node version-bump.mjs && git add manifest.json versions.json package.json"
+  },
+  "author": "LukeMT, pashashocky",
+  "homepage": "https://github.com/lukemt/obsidian-feeds#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukemt/obsidian-feeds.git"
+  },
+  "keywords": [
+    "note",
+    "feed",
+    "plugin",
+    "obsidian"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "@typescript-eslint/eslint-plugin": "5.29.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "builtin-modules": "3.3.0",
+    "esbuild": "^0.15.7",
+    "eslint": "^8.51.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.1",
+    "obsidian": "latest",
+    "obsidian-dataview": "^0.5.61",
+    "prettier": "^2.6.2",
+    "tslib": "2.4.0",
+    "typescript": "4.4.4"
+  }
+}
