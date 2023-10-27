@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-feeds",
 	"name": "Obsidian Feeds",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"minAppVersion": "1.2.0",
 	"description": "Obsidian plugin to add magic feed views using Dataview",
 	"author": "LukeMT",

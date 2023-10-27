@@ -1,6 +1,6 @@
 {
   "name": "note-feed",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Obsidian plugin to add magic feed views using Dataview",
   "main": "main.js",
   "scripts": {
@@ -18,7 +18,12 @@
     "type": "git",
     "url": "git+https://github.com/lukemt/obsidian-feeds.git"
   },
-  "keywords": ["note", "feed", "plugin", "obsidian"],
+  "keywords": [
+    "note",
+    "feed",
+    "plugin",
+    "obsidian"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.11.6",
