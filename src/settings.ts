@@ -152,39 +152,3 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       );
   }
 }
-// const getSettings = async (
-//   plugin: ObsidianFeedsPlugin,
-//   src: string,
-//   container: HTMLElement,
-// ) => {
-//   const settingsSrc = parseYaml(src);
-//   if (settingsSrc === undefined) {
-//     const error = "Cannot parse YAML!";
-//     renderError(container, error);
-//     throw new Error(error);
-//   }
-//   const settings = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
-//   const newSettings = { ...settings, ...settingsSrc };
-//   plugin.saveData(newSettings);
-//   return newSettings;
-// };
-//
-// export default getSettings;
-// const getSettings = async (
-//   plugin: ObsidianFeedsPlugin,
-//   src: string,
-//   container: HTMLElement,
-// ) => {
-//   const settingsSrc = parseYaml(src);
-//   if (settingsSrc === undefined) {
-//     const error = "Cannot parse YAML!";
-//     renderError(container, error);
-//     throw new Error(error);
-//   }
-//   const settings = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
-//   const newSettings = { ...settings, ...settingsSrc };
-//   plugin.saveData(newSettings);
-//   return newSettings;
-// };
-//
-// export default getSettings;

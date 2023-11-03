@@ -1,25 +1,24 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
-import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
+import { DataviewApi, Literal, ListItem, getAPI } from "obsidian-dataview";
 import ObsidianFeedsPlugin from "~/main";
-import { DEFAULT_SETTINGS, ObsidianFeedsSettings } from "~/settings";
+import { ObsidianFeedsSettings } from "~/settings";
 import { RefreshableRenderer } from "~/ui/refreshable-renderer";
-import { addCopyFeedButton, buildConfig } from "~/ui/render";
+import { addCopyFeedButton } from "~/ui/render";
 
 export default class FeedRenderer extends RefreshableRenderer {
   public app: App;
-  public state: ObsidianFeedsSettings;
   public file: TFile;
   public configEl: HTMLElement;
 
   constructor(
     public plugin: ObsidianFeedsPlugin,
     public api: DataviewApi,
+    public settings: ObsidianFeedsSettings,
     public containerEl: HTMLElement,
     public context: MarkdownPostProcessorContext,
   ) {
     super(api, containerEl);
     this.app = api.app;
-    this.state = { ...this.plugin.settings };
 
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
@@ -27,32 +26,7 @@ export default class FeedRenderer extends RefreshableRenderer {
     }
   }
 
-  initState() {
-    this.state = { ...DEFAULT_SETTINGS, showOptionsPanel: true };
-    this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-    this.plugin.saveData(this.state);
-  }
-
-  async setStateProperty<T extends keyof ObsidianFeedsSettings>(
-    prop: T,
-    value: ObsidianFeedsSettings[T],
-  ) {
-    this.state[prop] = value;
-    if (this.api.settings.refreshEnabled) {
-      this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
-    }
-    this.plugin.saveData(this.state);
-  }
-
   async run() {
-    this.configEl = this.containerEl.createDiv("options");
-    buildConfig(
-      this.configEl,
-      this.state,
-      (k, v) => this.setStateProperty(k, v),
-      () => this.initState(),
-    );
-
     const isMatch = (l: Literal) =>
       l.section.subpath === this.file.basename ||
       l.outlinks?.some((o: Literal) =>
@@ -77,8 +51,8 @@ export default class FeedRenderer extends RefreshableRenderer {
       const hasText = /[a-zA-Z0-9]/g.test(cleanText);
       if (hasText) {
         if (
-          this.state.oneliners ||
-          (this.state.showParentIfNotAlone && listItem.children.length)
+          this.settings.oneliners ||
+          (this.settings.showParentIfNotAlone && listItem.children.length)
         ) {
           return true;
         }
@@ -86,14 +60,14 @@ export default class FeedRenderer extends RefreshableRenderer {
       }
 
       // not alone, keep parent
-      if (this.state.showParentIfNotAlone) {
+      if (this.settings.showParentIfNotAlone) {
         const textWithoutOwnLink = listItem.text
           .replace(`[[${this.file.basename}]]`, "")
           .replace(/^[^[]+/, "")
           .replace(/[^\]]+$/, "");
 
         if (textWithoutOwnLink) {
-          if (this.state.removeOwnLinkFromList) {
+          if (this.settings.removeOwnLinkFromList) {
             listItem.text = textWithoutOwnLink;
           }
           return true;
@@ -104,7 +78,7 @@ export default class FeedRenderer extends RefreshableRenderer {
     };
 
     const showTask = (listItem: ListItem) => {
-      switch (this.state.onlyWithTasks) {
+      switch (this.settings.onlyWithTasks) {
         case "all":
         case true:
           return listItem.task;
@@ -113,7 +87,7 @@ export default class FeedRenderer extends RefreshableRenderer {
         case "undone":
           return listItem.task && !listItem.checked;
         default:
-          return listItem.task && listItem.status === this.state.onlyWithTasks;
+          return listItem.task && listItem.status === this.settings.onlyWithTasks;
       }
     };
 
@@ -130,7 +104,7 @@ export default class FeedRenderer extends RefreshableRenderer {
       return false;
     };
 
-    const searchFor = this.state.searchFor.replaceAll(
+    const searchFor = this.settings.searchFor.replaceAll(
       "[[#]]",
       `[[${this.file.basename}]]`,
     );
@@ -140,38 +114,43 @@ export default class FeedRenderer extends RefreshableRenderer {
 
     const query =
       `(${searchQuery})` +
-      (this.state.includeFolders.length
-        ? ` AND (${this.state.includeFolders.map(f => `"${f}"`).join(" OR ")})`
+      (this.settings.includeFolders.length
+        ? ` AND (${this.settings.includeFolders.map(f => `"${f}"`).join(" OR ")})`
         : "") +
-      (this.state.excludeFolders.length
-        ? ` AND (${this.state.excludeFolders.map(f => `!"${f}"`).join(" OR ")})`
+      (this.settings.excludeFolders.length
+        ? ` AND (${this.settings.excludeFolders.map(f => `!"${f}"`).join(" OR ")})`
         : "");
 
     let result = this.api
       .pages(query)
       .file.lists.filter(
-        this.state.showTree
+        this.settings.showTree
           ? (l: Literal) => !l.parent && someOfMeAndMyChildren(l, isMatch)
           : isMatch,
       )
       .flatMap(
-        this.state.showTree ? tree : (l: Literal) => (showParent(l) ? [l] : l.children),
+        this.settings.showTree
+          ? tree
+          : (l: Literal) => (showParent(l) ? [l] : l.children),
       )
       .filter(
-        (l: Literal) => !this.state.onlyWithTasks || someOfMeAndMyChildren(l, showTask),
+        (l: Literal) =>
+          !this.settings.onlyWithTasks || someOfMeAndMyChildren(l, showTask),
       )
-      .groupBy((l: Literal) => (this.state.groupBySection ? l.link : l.link.toFile()))
+      .groupBy((l: Literal) =>
+        this.settings.groupBySection ? l.link : l.link.toFile(),
+      )
       .sort(
-        (l: Literal) => (this.state.sortByPath ? l : l.key.fileName()),
-        this.state.sort,
+        (l: Literal) => (this.settings.sortByPath ? l : l.key.fileName()),
+        this.settings.sort,
       );
 
-    if (this.state.showCopyFeedButton && this.state.showOptionsPanel) {
+    if (this.settings.showCopyFeedButton && this.settings.showOptionsPanel) {
       addCopyFeedButton(this.configEl, this.api, result);
     }
 
     let group = true;
-    if (this.state.collapseHeaders) {
+    if (this.settings.collapseHeaders) {
       result = result.flatMap((section: Literal) =>
         section.rows.map((row: Literal) => ({
           ...row,
