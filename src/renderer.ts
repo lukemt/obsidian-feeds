@@ -1,5 +1,5 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
-import { DataviewApi, Literal, ListItem, getAPI } from "obsidian-dataview";
+import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
 import ObsidianFeedsPlugin from "~/main";
 import { ObsidianFeedsSettings } from "~/settings";
 import { RefreshableRenderer } from "~/ui/refreshable-renderer";
