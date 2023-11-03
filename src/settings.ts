@@ -3,7 +3,7 @@ import ObsidianFeedsPlugin from "~/main";
 
 export interface ObsidianFeedsSettings {
   searchFor: string;
-  onlyWithTasks: boolean | string;
+  onlyWithTasks: boolean; // TODO: Add support for "all" | "done" | "undone";
   excludeFolders: string[];
   includeFolders: string[];
   oneliners: boolean;

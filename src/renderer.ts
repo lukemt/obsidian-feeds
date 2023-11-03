@@ -79,13 +79,13 @@ export default class FeedRenderer extends RefreshableRenderer {
 
     const showTask = (listItem: ListItem) => {
       switch (this.settings.onlyWithTasks) {
-        case "all":
+        // case "all":
         case true:
           return listItem.task;
-        case "done":
-          return listItem.task && listItem.checked;
-        case "undone":
-          return listItem.task && !listItem.checked;
+        // case "done":
+        //   return listItem.task && listItem.checked;
+        // case "undone":
+        //   return listItem.task && !listItem.checked;
         default:
           return listItem.task && listItem.status === this.settings.onlyWithTasks;
       }
