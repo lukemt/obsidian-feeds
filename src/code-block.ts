@@ -1,9 +1,4 @@
-import {
-  App,
-  MarkdownPostProcessorContext,
-  MarkdownRenderChild,
-  parseYaml,
-} from "obsidian";
+import { MarkdownPostProcessorContext, MarkdownRenderChild, parseYaml } from "obsidian";
 import { getAPI, isPluginEnabled } from "obsidian-dataview";
 import ObsidianFeedsPlugin from "~/main";
 import { renderError } from "~/ui/render";

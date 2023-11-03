@@ -5,7 +5,6 @@ import {
   ObsidianFeedsSettings,
   ObsidianFeedsSettingsTab,
 } from "~/settings";
-import ObsidianFeeds from "~/view";
 
 export default class ObsidianFeedsPlugin extends Plugin {
   settings: ObsidianFeedsSettings;
