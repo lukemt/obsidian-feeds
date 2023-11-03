@@ -1,5 +1,5 @@
 import { DataviewApi, DataArray } from "obsidian-dataview";
-import { Settings } from "view/settings";
+import { Settings } from "~/view/settings";
 
 export function renderError(container: HTMLElement, error: string) {
   // render a custom error and style it

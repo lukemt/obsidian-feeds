@@ -1,16 +1,35 @@
 import { Plugin } from "obsidian";
-import ObsidianFeeds from "view";
+import ObsidianFeedsCodeBlockProcessor from "~/code-block";
+import {
+  DEFAULT_SETTINGS,
+  ObsidianFeedsSettings,
+  ObsidianFeedsSettingsTab,
+} from "~/settings";
+import ObsidianFeeds from "~/view";
 
 export default class ObsidianFeedsPlugin extends Plugin {
+  settings: ObsidianFeedsSettings;
   /**
    * Called on plugin load.
    * This can be when the plugin is enabled or Obsidian is first opened.
    */
   async onload() {
-    this.registerMarkdownCodeBlockProcessor("obsidian-feeds", (src, el, ctx) => {
-      const handler = new ObsidianFeeds(this, src, el, this.app, ctx);
-      ctx.addChild(handler);
-    });
+    await this.loadSettings();
+
+    this.addSettingTab(new ObsidianFeedsSettingsTab(this.app, this));
+
+    this.registerMarkdownCodeBlockProcessor(
+      "obsidian-feeds",
+      (src, containerEl, context) => {
+        const handler = new ObsidianFeedsCodeBlockProcessor(
+          this,
+          src,
+          containerEl,
+          context,
+        );
+        context.addChild(handler);
+      },
+    );
   }
 
   /**
@@ -18,4 +37,12 @@ export default class ObsidianFeedsPlugin extends Plugin {
    * This can be when the plugin is disabled or Obsidian is closed.
    */
   async onunload() {}
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
 }

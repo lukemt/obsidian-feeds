@@ -1,27 +1,25 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
 import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
-import { RefreshableRenderer } from "ui/refreshable-renderer";
-import { Settings } from "./settings";
-import { addCopyFeedButton, buildConfig } from "ui/render";
-import { DEFAULT_SETTINGS } from "view/settings";
-import ObsidianFeedsPlugin from "main";
+import ObsidianFeedsPlugin from "~/main";
+import { DEFAULT_SETTINGS, ObsidianFeedsSettings } from "~/settings";
+import { RefreshableRenderer } from "~/ui/refreshable-renderer";
+import { addCopyFeedButton, buildConfig } from "~/ui/render";
 
-export default class FeedsRenderer extends RefreshableRenderer {
+export default class FeedRenderer extends RefreshableRenderer {
   public app: App;
-  public state: Settings;
+  public state: ObsidianFeedsSettings;
   public file: TFile;
   public configEl: HTMLElement;
 
   constructor(
     public plugin: ObsidianFeedsPlugin,
     public api: DataviewApi,
-    public settings: Settings,
     public containerEl: HTMLElement,
     public context: MarkdownPostProcessorContext,
   ) {
     super(api, containerEl);
     this.app = api.app;
-    this.state = { ...this.settings };
+    this.state = { ...this.plugin.settings };
 
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
@@ -35,7 +33,10 @@ export default class FeedsRenderer extends RefreshableRenderer {
     this.plugin.saveData(this.state);
   }
 
-  async setStateProperty<T extends keyof Settings>(prop: T, value: Settings[T]) {
+  async setStateProperty<T extends keyof ObsidianFeedsSettings>(
+    prop: T,
+    value: ObsidianFeedsSettings[T],
+  ) {
     this.state[prop] = value;
     if (this.api.settings.refreshEnabled) {
       this.app.commands.executeCommandById("dataview:dataview-force-refresh-views");
