@@ -1,7 +1,7 @@
 import { DataviewApi } from "obsidian-dataview";
 
-import { DataviewRefreshableRenderer } from "ui/refreshable-view";
-import { renderError } from "ui/render";
+import { DataviewRefreshableRenderer } from "~/ui/refreshable-view";
+import { renderError } from "~/ui/render";
 
 export abstract class RefreshableRenderer extends DataviewRefreshableRenderer {
   constructor(public api: DataviewApi, public containerEl: HTMLElement) {
