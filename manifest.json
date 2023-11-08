@@ -1,11 +1,11 @@
 {
-	"id": "obsidian-feeds",
-	"name": "Obsidian Feeds",
-	"version": "0.0.4",
-	"minAppVersion": "1.2.0",
-	"description": "Obsidian plugin to add magic feed views using Dataview",
-	"author": "LukeMT, pashashocky, madx",
-	"authorUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
-	"fundingUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
-	"isDesktopOnly": false
+  "id": "feeds",
+  "name": "Feeds",
+  "version": "0.0.4",
+  "minAppVersion": "1.2.0",
+  "description": "Obsidian plugin to add magic feed views using Dataview",
+  "author": "LukeMT, pashashocky, madx",
+  "authorUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
+  "fundingUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
+  "isDesktopOnly": false
 }

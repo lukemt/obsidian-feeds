@@ -1,7 +1,7 @@
 {
-  "name": "note-feed",
+  "name": "obsidian-feeds",
   "version": "0.0.4",
-  "description": "Obsidian plugin to add magic feed views using Dataview",
+  "description": "Create feeds of topic-specific bullet points in Obsidian",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",

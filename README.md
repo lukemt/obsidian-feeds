@@ -1,12 +1,16 @@
-# obsidian-feeds
+# Feeds
 
 Create feeds of topic-specific bullet points in Obsidian.
+
+## Requirements
+
+Feeds requires the [Dataview](https://obsidian.md/plugins?id=dataview) plugin to be installed. You can install it from the Community plugins.
 
 ## Installation
 
 ### Community plugin
 
-We are working on getting the plugin installable through community plugins.
+We are working on getting the plugin installable through Community plugins.
 
 ### BRAT
 
@@ -20,12 +24,13 @@ To use the development version, you can use [BRAT](https://github.com/TfTHacker/
 
 ## Usage
 
-- Put the following code block into any topical note:
+- Put the following code block into any topic note:
 
-~~~md  
+````md
 ```obsidian-feeds
+
 ```
-~~~
+````
 
 - Link to the topical note in bullet points
 - Enjoy!
