@@ -1,6 +1,6 @@
 {
   "name": "note-feed",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Obsidian plugin to add magic feed views using Dataview",
   "main": "main.js",
   "scripts": {
