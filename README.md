@@ -2,6 +2,8 @@
 
 Create feeds of topic-specific bullet points in Obsidian.
 
+![image](https://github.com/lukemt/obsidian-feeds/assets/5723/aabbf9b9-9ac6-4d5a-abbd-52017f4c0c29)
+
 ## Requirements
 
 Feeds requires the [Dataview](https://obsidian.md/plugins?id=dataview) plugin to be installed. You can install it from the Community plugins.
