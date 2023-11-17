@@ -3,13 +3,13 @@ import { DataviewApi, DataArray } from "obsidian-dataview";
 export function renderError(container: HTMLElement, error: string) {
   // render a custom error and style it
   const wrapper = container.createEl("div");
-  wrapper.createEl("p", { text: `(Error) Obsidian Feeds: ${error}` });
+  wrapper.createEl("div", { text: `Feeds Error: ${error}` });
 
-  wrapper.style.borderRadius = "4px";
-  wrapper.style.padding = "2px 16px";
-  wrapper.style.backgroundColor = "#e50914";
-  wrapper.style.color = "#fff";
-  wrapper.style.fontWeight = "bolder";
+  wrapper.style.borderRadius = "var(--callout-radius)";
+  wrapper.style.padding = "var(--callout-padding)";
+  wrapper.style.backgroundColor = "var(--background-modifier-error)";
+  wrapper.style.color = "var(--text-on-accent-inverted)";
+  wrapper.style.fontWeight = "var(--font-bold)";
 }
 
 export function addCopyFeedButton(
