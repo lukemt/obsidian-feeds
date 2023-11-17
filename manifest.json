@@ -1,7 +1,7 @@
 {
   "id": "feeds",
   "name": "Feeds",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "minAppVersion": "1.2.0",
   "description": "Create feeds of topic-specific bullet points in Obsidian.",
   "author": "LukeMT, pashashocky, madx",
