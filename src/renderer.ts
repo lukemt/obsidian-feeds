@@ -13,11 +13,11 @@ export default class FeedRenderer extends RefreshableRenderer {
   constructor(
     public plugin: ObsidianFeedsPlugin,
     public api: DataviewApi,
-    public settings: ObsidianFeedsSettings,
+    public getSettings: () => ObsidianFeedsSettings,
     public containerEl: HTMLElement,
     public context: MarkdownPostProcessorContext,
   ) {
-    super(api, containerEl);
+    super(containerEl, api);
     this.app = api.app;
 
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
@@ -27,6 +27,7 @@ export default class FeedRenderer extends RefreshableRenderer {
   }
 
   async run() {
+    const settings = this.getSettings();
     const isMatch = (l: Literal) =>
       l.section.subpath === this.file.basename ||
       l.outlinks?.some((o: Literal) =>
@@ -51,8 +52,8 @@ export default class FeedRenderer extends RefreshableRenderer {
       const hasText = /[a-zA-Z0-9]/g.test(cleanText);
       if (hasText) {
         if (
-          this.settings.oneliners ||
-          (this.settings.showParentIfNotAlone && listItem.children.length)
+          settings.oneliners ||
+          (settings.showParentIfNotAlone && listItem.children.length)
         ) {
           return true;
         }
@@ -60,14 +61,14 @@ export default class FeedRenderer extends RefreshableRenderer {
       }
 
       // not alone, keep parent
-      if (this.settings.showParentIfNotAlone) {
+      if (settings.showParentIfNotAlone) {
         const textWithoutOwnLink = listItem.text
           .replace(`[[${this.file.basename}]]`, "")
           .replace(/^[^[]+/, "")
           .replace(/[^\]]+$/, "");
 
         if (textWithoutOwnLink) {
-          if (this.settings.removeOwnLinkFromList) {
+          if (settings.removeOwnLinkFromList) {
             listItem.text = textWithoutOwnLink;
           }
           return true;
@@ -78,7 +79,7 @@ export default class FeedRenderer extends RefreshableRenderer {
     };
 
     const showTask = (listItem: ListItem) => {
-      switch (this.settings.onlyWithTasks) {
+      switch (settings.onlyWithTasks) {
         // case "all":
         case true:
           return listItem.task;
@@ -87,7 +88,7 @@ export default class FeedRenderer extends RefreshableRenderer {
         // case "undone":
         //   return listItem.task && !listItem.checked;
         default:
-          return listItem.task && listItem.status === this.settings.onlyWithTasks;
+          return listItem.task && listItem.status === settings.onlyWithTasks;
       }
     };
 
@@ -104,7 +105,7 @@ export default class FeedRenderer extends RefreshableRenderer {
       return false;
     };
 
-    const searchFor = this.settings.searchFor.replaceAll(
+    const searchFor = settings.searchFor.replaceAll(
       "[[#]]",
       `[[${this.file.basename}]]`,
     );
@@ -114,43 +115,38 @@ export default class FeedRenderer extends RefreshableRenderer {
 
     const query =
       `(${searchQuery})` +
-      (this.settings.includeFolders.length
-        ? ` AND (${this.settings.includeFolders.map(f => `"${f}"`).join(" OR ")})`
+      (settings.includeFolders.length
+        ? ` AND (${settings.includeFolders.map(f => `"${f}"`).join(" OR ")})`
         : "") +
-      (this.settings.excludeFolders.length
-        ? ` AND (${this.settings.excludeFolders.map(f => `!"${f}"`).join(" OR ")})`
+      (settings.excludeFolders.length
+        ? ` AND (${settings.excludeFolders.map(f => `!"${f}"`).join(" OR ")})`
         : "");
 
     let result = this.api
       .pages(query)
       .file.lists.filter(
-        this.settings.showTree
+        settings.showTree
           ? (l: Literal) => !l.parent && someOfMeAndMyChildren(l, isMatch)
           : isMatch,
       )
       .flatMap(
-        this.settings.showTree
-          ? tree
-          : (l: Literal) => (showParent(l) ? [l] : l.children),
+        settings.showTree ? tree : (l: Literal) => (showParent(l) ? [l] : l.children),
       )
       .filter(
-        (l: Literal) =>
-          !this.settings.onlyWithTasks || someOfMeAndMyChildren(l, showTask),
+        (l: Literal) => !settings.onlyWithTasks || someOfMeAndMyChildren(l, showTask),
       )
-      .groupBy((l: Literal) =>
-        this.settings.groupBySection ? l.link : l.link.toFile(),
-      )
+      .groupBy((l: Literal) => (settings.groupBySection ? l.link : l.link.toFile()))
       .sort(
-        (l: Literal) => (this.settings.sortByPath ? l : l.key.fileName()),
-        this.settings.sort,
+        (l: Literal) => (settings.sortByPath ? l : l.key.fileName()),
+        settings.sort,
       );
 
-    if (this.settings.showCopyFeedButton && this.settings.showOptionsPanel) {
-      addCopyFeedButton(this.configEl, this.api, result);
+    if (settings.showCopyFeedButton && settings.showOptionsPanel) {
+      addCopyFeedButton(this.containerEl, this.api, result);
     }
 
     let group = true;
-    if (this.settings.collapseHeaders) {
+    if (settings.collapseHeaders) {
       result = result.flatMap((section: Literal) =>
         section.rows.map((row: Literal) => ({
           ...row,

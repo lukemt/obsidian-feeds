@@ -15,7 +15,7 @@ export default class ObsidianFeedsPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    this.addSettingTab(new ObsidianFeedsSettingsTab(this.app, this));
+    this.addSettingTab(new ObsidianFeedsSettingsTab(this));
 
     this.registerMarkdownCodeBlockProcessor(
       "obsidian-feeds",
@@ -43,5 +43,11 @@ export default class ObsidianFeedsPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+
+  async updateSettings(settingsUpdate: Partial<ObsidianFeedsSettings>) {
+    Object.assign(this.settings, settingsUpdate);
+    this.saveSettings();
+    this.app.workspace.trigger("feeds:update-settings");
   }
 }

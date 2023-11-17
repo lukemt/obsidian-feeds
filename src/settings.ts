@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { PluginSettingTab, Setting } from "obsidian";
 import ObsidianFeedsPlugin from "~/main";
 
 export interface ObsidianFeedsSettings {
@@ -40,8 +40,8 @@ export const DEFAULT_SETTINGS: ObsidianFeedsSettings = {
 export class ObsidianFeedsSettingsTab extends PluginSettingTab {
   plugin: ObsidianFeedsPlugin;
 
-  constructor(app: App, plugin: ObsidianFeedsPlugin) {
-    super(app, plugin);
+  constructor(plugin: ObsidianFeedsPlugin) {
+    super(plugin.app, plugin);
     this.plugin = plugin;
   }
 
@@ -58,8 +58,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
           .setPlaceholder(DEFAULT_SETTINGS.searchFor)
           .setValue(this.plugin.settings.searchFor)
           .onChange(async value => {
-            this.plugin.settings.searchFor = value;
-            await this.plugin.saveSettings();
+            await this.plugin.updateSettings({
+              searchFor: value,
+            });
           }),
       );
 
@@ -68,8 +69,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Only include lines with tasks")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.onlyWithTasks).onChange(async value => {
-          this.plugin.settings.onlyWithTasks = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            onlyWithTasks: value,
+          });
         }),
       );
 
@@ -78,8 +80,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Include lines starting with the topic")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.oneliners).onChange(async value => {
-          this.plugin.settings.oneliners = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            oneliners: value,
+          });
         }),
       );
 
@@ -90,8 +93,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
         toggle
           .setValue(this.plugin.settings.showParentIfNotAlone)
           .onChange(async value => {
-            this.plugin.settings.showParentIfNotAlone = value;
-            await this.plugin.saveSettings();
+            await this.plugin.updateSettings({
+              showParentIfNotAlone: value,
+            });
           }),
       );
 
@@ -100,8 +104,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Group items by their parent section")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.groupBySection).onChange(async value => {
-          this.plugin.settings.groupBySection = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            groupBySection: value,
+          });
         }),
       );
 
@@ -110,8 +115,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Remove headers from the output")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.collapseHeaders).onChange(async value => {
-          this.plugin.settings.collapseHeaders = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            collapseHeaders: value,
+          });
         }),
       );
 
@@ -126,8 +132,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
             if (value !== "desc" && value !== "asc") {
               throw new Error("Invalid sort order type");
             }
-            this.plugin.settings.sort = value;
-            await this.plugin.saveSettings();
+            await this.plugin.updateSettings({
+              sort: value,
+            });
           }),
       );
 
@@ -136,8 +143,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Sort item depending on their path")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.sortByPath).onChange(async value => {
-          this.plugin.settings.sortByPath = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            sortByPath: value,
+          });
         }),
       );
 
@@ -146,8 +154,9 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       .setDesc("Show the whole tree")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.showTree).onChange(async value => {
-          this.plugin.settings.showTree = value;
-          await this.plugin.saveSettings();
+          await this.plugin.updateSettings({
+            showTree: value,
+          });
         }),
       );
   }

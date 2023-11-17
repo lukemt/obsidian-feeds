@@ -17,7 +17,7 @@ export default class ObsidianFeedsCodeBlockProcessor extends MarkdownRenderChild
     super(containerEl);
 
     try {
-      this.settings = mergeSettings(plugin.settings, src);
+      this.getSettings();
     } catch (error: unknown) {
       renderError(containerEl, (error as Error).message);
       throw error;
@@ -38,7 +38,7 @@ export default class ObsidianFeedsCodeBlockProcessor extends MarkdownRenderChild
       new FeedRenderer(
         this.plugin,
         dvApi,
-        this.settings,
+        () => this.getSettings(),
         this.containerEl,
         this.context,
       ),
@@ -46,6 +46,11 @@ export default class ObsidianFeedsCodeBlockProcessor extends MarkdownRenderChild
   }
 
   async onunload() {}
+
+  getSettings() {
+    this.settings = mergeSettings(this.plugin.settings, this.src);
+    return this.settings;
+  }
 }
 
 const mergeSettings = (defaultSettings: ObsidianFeedsSettings, yaml: string) => {
