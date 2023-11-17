@@ -1,5 +1,6 @@
 import { Plugin } from "obsidian";
 import ObsidianFeedsCodeBlockProcessor from "~/code-block";
+import DeprecatedObsidianFeedsCodeBlockProcessor from "~/deprecated-code-block";
 import {
   DEFAULT_SETTINGS,
   ObsidianFeedsSettings,
@@ -19,16 +20,21 @@ export default class ObsidianFeedsPlugin extends Plugin {
 
     this.registerMarkdownCodeBlockProcessor(
       "obsidian-feeds",
-      (src, containerEl, context) => {
-        const handler = new ObsidianFeedsCodeBlockProcessor(
-          this,
-          src,
-          containerEl,
-          context,
-        );
+      (_, containerEl, context) => {
+        const handler = new DeprecatedObsidianFeedsCodeBlockProcessor(containerEl);
         context.addChild(handler);
       },
     );
+
+    this.registerMarkdownCodeBlockProcessor("feed", (src, containerEl, context) => {
+      const handler = new ObsidianFeedsCodeBlockProcessor(
+        this,
+        src,
+        containerEl,
+        context,
+      );
+      context.addChild(handler);
+    });
   }
 
   /**
