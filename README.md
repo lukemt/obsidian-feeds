@@ -29,8 +29,7 @@ To use the development version, you can use [BRAT](https://github.com/TfTHacker/
 - Put the following code block into any topic note:
 
 ````md
-```obsidian-feeds
-
+```feed
 ```
 ````
 
