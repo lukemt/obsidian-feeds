@@ -17,7 +17,7 @@ export abstract class RefreshableRenderer extends MarkdownRenderChild {
   abstract run(): Promise<void>;
 
   async render() {
-    this.containerEl.innerHTML = "";
+    this.containerEl.empty();
 
     if (!this.dvApi.settings.enableDataviewJs) {
       renderError(
