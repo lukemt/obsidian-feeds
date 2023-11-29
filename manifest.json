@@ -5,7 +5,7 @@
   "minAppVersion": "1.2.0",
   "description": "Create feeds of topic-specific bullet points in Obsidian.",
   "author": "LukeMT, pashashocky, madx",
-  "authorUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
-  "fundingUrl": "https://github.com/lukemt/, https://github.com/pashashocky/, https://github.com/madx/",
+  "authorUrl": "https://github.com/lukemt/",
+  "fundingUrl": "",
   "isDesktopOnly": false
 }
