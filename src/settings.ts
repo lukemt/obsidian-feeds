@@ -65,7 +65,7 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Only with Tasks")
+      .setName("Tasks only")
       .setDesc("Only include lines with tasks")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.onlyWithTasks).onChange(async value => {
@@ -100,7 +100,7 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Group by Section")
+      .setName("Group by section")
       .setDesc("Group items by their parent section")
       .addToggle(toggle =>
         toggle.setValue(this.plugin.settings.groupBySection).onChange(async value => {
