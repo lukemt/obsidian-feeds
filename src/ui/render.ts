@@ -1,15 +1,8 @@
 import { DataviewApi, DataArray } from "obsidian-dataview";
 
 export function renderError(container: HTMLElement, error: string) {
-  // render a custom error and style it
-  const wrapper = container.createEl("div");
-  wrapper.createEl("div", { text: `Feeds Error: ${error}` });
-
-  wrapper.style.borderRadius = "var(--callout-radius)";
-  wrapper.style.padding = "var(--callout-padding)";
-  wrapper.style.backgroundColor = "var(--background-modifier-error)";
-  wrapper.style.color = "var(--text-on-accent-inverted)";
-  wrapper.style.fontWeight = "var(--font-bold)";
+  const wrapper = container.createEl("div", { cls: "plugin-feeds-error" });
+  wrapper.createEl("p", { text: `Feeds Error: ${error}` });
 }
 
 export function addCopyFeedButton(

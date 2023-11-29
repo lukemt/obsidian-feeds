@@ -1,0 +1,11 @@
+.plugin-feeds-error {
+  border-radius: var(--callout-radius);
+  padding: var(--callout-padding);
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent-inverted);
+  font-weight: var(--font-bold);
+}
+
+.plugin-feeds-error > p {
+  margin: 0;
+}

@@ -14,7 +14,7 @@ const staticAssetsPlugin = {
   setup(build) {
     build.onLoad({ filter: /.+/ }, () => {
       return {
-        watchFiles: ["esbuild.config.mjs"],
+        watchFiles: ["styles.css", "esbuild.config.mjs"],
       };
     });
   },
