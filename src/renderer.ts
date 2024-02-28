@@ -177,7 +177,7 @@ export default class FeedRenderer extends RefreshableRenderer {
       },
     });
 
-    this.containerEl.createEl("span", { text: `${this.currentPage} / ${maxPage}` });
+    this.containerEl.createEl("span", { text: `${this.currentPage + 1} / ${maxPage}` });
 
     const nextPageButton = this.containerEl.createEl("button", {
       text: "→",
