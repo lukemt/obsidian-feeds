@@ -35,7 +35,7 @@
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
-    "obsidian": "latest",
+    "obsidian": "^1.5.7-1",
     "obsidian-dataview": "^0.5.61",
     "prettier": "^2.6.2",
     "tslib": "2.4.0",
