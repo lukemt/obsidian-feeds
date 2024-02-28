@@ -9,7 +9,10 @@ import { renderError } from "~/ui/render";
 export abstract class RefreshableRenderer extends MarkdownRenderChild {
   private lastReload: number;
 
-  constructor(public containerEl: HTMLElement, public dvApi: DataviewApi) {
+  constructor(
+    public containerEl: HTMLElement,
+    public dvApi: DataviewApi,
+  ) {
     super(containerEl);
     this.lastReload = 0;
   }
