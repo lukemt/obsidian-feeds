@@ -111,8 +111,10 @@ export default class FeedRenderer extends RefreshableRenderer {
       "[[#]]",
       `[[${this.file.basename}]]`,
     );
-    const searchForLinks = searchFor.match(/\[\[(.*?)\]\]/g) ?? [];
-    const searchForTags = searchFor.match(/#[^\s,#]+/g) ?? [];
+    const searchForLinks: RegExpMatchArray | string[] =
+      searchFor.match(/\[\[(.*?)\]\]/g) ?? [];
+    const searchForTags: RegExpMatchArray | string[] =
+      searchFor.match(/#[^\s,#]+/g) ?? [];
     const searchQuery = [...searchForLinks, ...searchForTags].join(" OR ");
 
     const query =

@@ -22,47 +22,51 @@ const staticAssetsPlugin = {
 
 const prod = process.argv[2] === "production";
 
-esbuild
-  .build({
-    banner: {
-      js: banner,
-    },
-    bundle: true,
-    entryPoints: ["src/main.ts"],
-    external: [
-      "obsidian",
-      "electron",
-      "@codemirror/autocomplete",
-      "@codemirror/closebrackets",
-      "@codemirror/collab",
-      "@codemirror/commands",
-      "@codemirror/comment",
-      "@codemirror/fold",
-      "@codemirror/gutter",
-      "@codemirror/highlight",
-      "@codemirror/history",
-      "@codemirror/language",
-      "@codemirror/lint",
-      "@codemirror/matchbrackets",
-      "@codemirror/panel",
-      "@codemirror/rangeset",
-      "@codemirror/rectangular-selection",
-      "@codemirror/search",
-      "@codemirror/state",
-      "@codemirror/stream-parser",
-      "@codemirror/text",
-      "@codemirror/tooltip",
-      "@codemirror/view",
-      ...builtins,
-    ],
-    format: "cjs",
-    logLevel: "info",
-    minify: prod ? true : false,
-    outfile: "main.js",
-    plugins: [staticAssetsPlugin],
-    sourcemap: prod ? false : "inline",
-    target: "es2016",
-    treeShaking: true,
-    watch: !prod,
-  })
-  .catch(() => process.exit(1));
+const config = {
+  banner: {
+    js: banner,
+  },
+  bundle: true,
+  entryPoints: ["src/main.ts"],
+  external: [
+    "obsidian",
+    "electron",
+    "@codemirror/autocomplete",
+    "@codemirror/closebrackets",
+    "@codemirror/collab",
+    "@codemirror/commands",
+    "@codemirror/comment",
+    "@codemirror/fold",
+    "@codemirror/gutter",
+    "@codemirror/highlight",
+    "@codemirror/history",
+    "@codemirror/language",
+    "@codemirror/lint",
+    "@codemirror/matchbrackets",
+    "@codemirror/panel",
+    "@codemirror/rangeset",
+    "@codemirror/rectangular-selection",
+    "@codemirror/search",
+    "@codemirror/state",
+    "@codemirror/stream-parser",
+    "@codemirror/text",
+    "@codemirror/tooltip",
+    "@codemirror/view",
+    ...builtins,
+  ],
+  format: "cjs",
+  logLevel: "info",
+  minify: prod ? true : false,
+  outfile: "main.js",
+  plugins: [staticAssetsPlugin],
+  sourcemap: prod ? false : "inline",
+  target: "es2022",
+  treeShaking: true,
+};
+
+if (prod) {
+  await esbuild.build(config);
+} else {
+  const context = await esbuild.context(config);
+  await context.watch();
+}
