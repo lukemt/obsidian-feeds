@@ -17,6 +17,7 @@ export interface ObsidianFeedsSettings {
   sort: "desc" | "asc";
   sortByPath: boolean;
   showTree: boolean;
+  pageLength: number;
 }
 
 export const DEFAULT_SETTINGS: ObsidianFeedsSettings = {
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: ObsidianFeedsSettings = {
   sort: "desc",
   sortByPath: true,
   showTree: false,
+  pageLength: 10,
 };
 
 export class ObsidianFeedsSettingsTab extends PluginSettingTab {
@@ -158,6 +160,21 @@ export class ObsidianFeedsSettingsTab extends PluginSettingTab {
             showTree: value,
           });
         }),
+      );
+
+    new Setting(containerEl)
+      .setName("Page length")
+      .setDesc("How many items to show per page")
+      .addSlider(slider =>
+        slider
+          .setLimits(5, 30, 5)
+          .setValue(this.plugin.settings.pageLength)
+          .setDynamicTooltip()
+          .onChange(async value => {
+            await this.plugin.updateSettings({
+              pageLength: value,
+            });
+          }),
       );
   }
 }

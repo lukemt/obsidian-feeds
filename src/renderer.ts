@@ -1,5 +1,5 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
-import { DataviewApi, Literal, ListItem } from "obsidian-dataview";
+import { DataviewApi, Literal, ListItem, DataArray } from "obsidian-dataview";
 import ObsidianFeedsPlugin from "~/main";
 import { ObsidianFeedsSettings } from "~/settings";
 import { RefreshableRenderer } from "~/ui/refreshable-renderer";
@@ -9,16 +9,18 @@ export default class FeedRenderer extends RefreshableRenderer {
   public app: App;
   public file: TFile;
   public configEl: HTMLElement;
+  public currentPage: number;
 
   constructor(
     public plugin: ObsidianFeedsPlugin,
-    public api: DataviewApi,
+    public dvApi: DataviewApi,
     public getSettings: () => ObsidianFeedsSettings,
     public containerEl: HTMLElement,
     public context: MarkdownPostProcessorContext,
   ) {
-    super(containerEl, api);
-    this.app = api.app;
+    super(containerEl, dvApi);
+    this.app = dvApi.app;
+    this.currentPage = 0;
 
     const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
     if (file instanceof TFile) {
@@ -122,7 +124,7 @@ export default class FeedRenderer extends RefreshableRenderer {
         ? ` AND (${settings.excludeFolders.map(f => `!"${f}"`).join(" OR ")})`
         : "");
 
-    let result = this.api
+    let result = this.dvApi
       .pages(query)
       .file.lists.filter(
         settings.showTree
@@ -142,7 +144,7 @@ export default class FeedRenderer extends RefreshableRenderer {
       );
 
     if (settings.showCopyFeedButton && settings.showOptionsPanel) {
-      addCopyFeedButton(this.containerEl, this.api, result);
+      addCopyFeedButton(this.containerEl, this.dvApi, result);
     }
 
     let group = true;
@@ -155,6 +157,43 @@ export default class FeedRenderer extends RefreshableRenderer {
       );
       group = false;
     }
-    this.api.taskList(result, group, this.containerEl, this);
+
+    const pageStart = this.currentPage * settings.pageLength;
+    const pageEnd = pageStart + settings.pageLength;
+    const page = result.slice(pageStart, pageEnd);
+
+    this.renderPagination(settings, result);
+    this.dvApi.taskList(page, group, this.containerEl, this);
+  }
+
+  renderPagination(settings: ObsidianFeedsSettings, result: DataArray) {
+    const maxPage = Math.ceil(result.length / settings.pageLength);
+
+    const prevPageButton = this.containerEl.createEl("button", {
+      text: "←",
+      attr: {
+        ...(this.currentPage === 0 ? { disabled: "disabled" } : {}),
+        style: "margin: 0 var(--size-4-2) 0 0",
+      },
+    });
+
+    this.containerEl.createEl("span", { text: `${this.currentPage} / ${maxPage}` });
+
+    const nextPageButton = this.containerEl.createEl("button", {
+      text: "→",
+      attr: {
+        ...(this.currentPage + 1 === maxPage ? { disabled: "disabled" } : {}),
+        style: "margin: 0 var(--size-4-2)",
+      },
+    });
+
+    prevPageButton.addEventListener("click", () => {
+      this.currentPage -= 1;
+      this.render();
+    });
+    nextPageButton.addEventListener("click", () => {
+      this.currentPage += 1;
+      this.render();
+    });
   }
 }
