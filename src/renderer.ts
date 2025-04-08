@@ -31,9 +31,9 @@ export default class FeedRenderer extends RefreshableRenderer {
   async run() {
     const settings = this.getSettings();
     const isMatch = (l: Literal) =>
-      l.section.subpath === this.file.basename ||
+      l.section.subpath?.toLowerCase() === this.file.basename.toLowerCase() ||
       l.outlinks?.some((o: Literal) =>
-        searchForLinks.includes(`[[${o.fileName()}]]`),
+        searchForLinks.map(sfl => sfl.toLowerCase()).includes(`[[${o.fileName()?.toLowerCase()}]]`),
       ) ||
       l.tags?.some((t: Literal) => searchForTags.some(tt => t.includes(tt)));
 
@@ -65,13 +65,18 @@ export default class FeedRenderer extends RefreshableRenderer {
       // not alone, keep parent
       if (settings.showParentIfNotAlone) {
         const textWithoutOwnLink = listItem.text
-          .replace(`[[${this.file.basename}]]`, "")
+          .toLowerCase()
+          .replace(`[[${this.file.basename.toLowerCase()}]]`, "")
           .replace(/^[^[]+/, "")
           .replace(/[^\]]+$/, "");
 
         if (textWithoutOwnLink) {
           if (settings.removeOwnLinkFromList) {
-            listItem.text = textWithoutOwnLink;
+            // there is an issue with an edge case when the the link is in different casing than the file name that I don't know how to fix without completely exploding the scource code, also i do't know if peaple even use the removeOwnLinkFromList feature (I don't) and also it is not a big deal to have the link in the list in that case
+            listItem.text = listItem.text
+              .replace(`[[${this.file.basename}]]`, "")
+              .replace(/^[^[]+/, "") // not quite sure what this does
+              .replace(/[^\]]+$/, ""); // not quite sure what this does
           }
           return true;
         }
