@@ -31,11 +31,15 @@ export default class FeedRenderer extends RefreshableRenderer {
   async run() {
     const settings = this.getSettings();
     const isMatch = (l: Literal) =>
-      l.section.subpath === this.file.basename ||
+      l.section.subpath?.toLowerCase() === this.file.basename?.toLowerCase() ||
       l.outlinks?.some((o: Literal) =>
-        searchForLinks.includes(`[[${o.fileName()}]]`),
+        searchForLinks.some(
+          sfl => sfl?.toLowerCase() === `[[${o.fileName()?.toLowerCase()}]]`,
+        ),
       ) ||
-      l.tags?.some((t: Literal) => searchForTags.some(tt => t.includes(tt)));
+      l.tags?.some((t: string) =>
+        searchForTags.some(tt => t?.toLowerCase().includes(tt?.toLowerCase())),
+      );
 
     const tree = (listItem: ListItem) => {
       // attention: this mutates the list item
