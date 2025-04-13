@@ -1,6 +1,6 @@
 {
   "name": "obsidian-feeds",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Create feeds of topic-specific bullet points in Obsidian",
   "main": "main.js",
   "scripts": {
